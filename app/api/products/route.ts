@@ -10,6 +10,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const user = await requireAuth(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const body = await request.json();
   const p: Product = {
     id: genId(body.nome || 'item'),

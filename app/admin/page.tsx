@@ -16,8 +16,9 @@ export default function AdminPage(){
       try{
         const r = await fetch('/api/auth/me', { cache: 'no-store' });
         const j = await r.json();
-        setAuthed(!!j.user);
-        if (!j.user) location.href = '/login';
+        const isOk = !!(j.user && j.user.isAdmin);
+        setAuthed(isOk);
+        if (!isOk) location.href = '/';
       }catch{ setAuthed(false); location.href = '/login'; }
     })();
   });
@@ -70,7 +71,7 @@ export default function AdminPage(){
     e.target.value = '';
   }
 
-  if (authed === null) return <div className="min-h-[50vh] grid place-items-center">A verificar sessão…</div>;
+  if (authed === null) return <div className="min-h-[50vh] grid place-items-center">A verificar permissões…</div>;
 
   return (
     <div>

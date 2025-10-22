@@ -15,7 +15,7 @@ export async function POST(request: Request){
   }
   const salt = genSalt();
   const passHash = await hashPassword(password, salt);
-  const user = { id: genUserId(email), name, email, passHash, salt, createdAt: Date.now() };
+  const user = { id: genUserId(email), name, email, passHash, salt, createdAt: Date.now(), isAdmin: false };
   users.push(user);
   await writeUsers(users);
   const res = NextResponse.json({ id: user.id, name: user.name, email: user.email }, { status: 201 });

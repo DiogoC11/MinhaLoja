@@ -11,6 +11,7 @@ export type User = {
   passHash: string; // scrypt hash base64
   salt: string;     // base64
   createdAt: number;
+  isAdmin?: boolean; // optional admin flag
 };
 
 const DATA_DIR = path.join(process.cwd(), 'data');

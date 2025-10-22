@@ -6,12 +6,14 @@ import { useEffect, useState } from 'react';
 export default function Header(){
   const { count } = useCart();
   const [authLabel, setAuthLabel] = useState('Entrar');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   async function refreshAuthLabel(){
     try {
       const res = await fetch('/api/auth/me', { cache: 'no-store' });
       const { user } = await res.json();
       setAuthLabel(user ? `Conta (${user.name || user.email})` : 'Entrar');
+      setIsAdmin(!!(user && user.isAdmin));
     } catch { setAuthLabel('Entrar'); }
   }
 
@@ -42,7 +44,7 @@ export default function Header(){
         <nav className="flex items-center gap-4">
           <Link href="/produtos">Produtos</Link>
           <Link href="/carrinho" className="cart-link">Carrinho <span className="badge">{count}</span></Link>
-          <Link href="/admin">Adicionar Produto</Link>
+          {isAdmin && <Link href="/admin">Adicionar Produto</Link>}
           <Link href="/login" id="auth-link">{authLabel}</Link>
         </nav>
       </div>
