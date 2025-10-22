@@ -44,7 +44,7 @@ export default function Header(){
         <nav className="flex items-center gap-4">
           <Link href="/produtos">Produtos</Link>
           <Link href="/carrinho" className="cart-link">Carrinho <span className="badge">{count}</span></Link>
-          {isAdmin && <Link href="/admin">Adicionar Produto</Link>}
+          {isAdmin && <Link href="/admin">Adicionar produto</Link>}
           <Link href="/login" id="auth-link">{authLabel}</Link>
         </nav>
       </div>

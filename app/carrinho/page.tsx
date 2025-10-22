@@ -2,6 +2,7 @@
 import useSWR from 'swr';
 import { useCart } from '@/components/CartContext';
 import type { Product } from '@/components/ProductCard';
+import { formatPriceEUR } from '@/lib/format';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -13,13 +14,13 @@ export default function CartPage(){
   const items = Object.values(cart);
 
   if (items.length === 0) return (
-    <div className="empty">Seu carrinho está vazio. <a className="btn btn-ghost ml-2" href="/produtos">Ver produtos</a></div>
+    <div className="empty">O seu carrinho está vazio. <a className="btn btn-ghost ml-2" href="/produtos">Ver produtos</a></div>
   );
 
   let subtotal = 0;
   items.forEach(it => { const p = map.get(it.id); if (p) subtotal += p.preco * it.qty; });
-  const frete = subtotal >= 299 ? 0 : 19.9;
-  const total = subtotal + frete;
+  const portes = subtotal >= 299 ? 0 : 19.9;
+  const total = subtotal + portes;
 
   return (
     <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
@@ -36,25 +37,25 @@ export default function CartPage(){
                   <strong>{p.nome}</strong>
                   <button className="btn btn-ghost" onClick={() => del(p.id)}>Remover</button>
                 </div>
-                <small className="muted">{p.preco.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})} un.</small>
+                <small className="muted">{formatPriceEUR(p.preco)} un.</small>
                 <div className="flex items-center gap-2 mt-2">
                   <button className="btn btn-ghost" onClick={() => dec(p.id)}>-</button>
                   <span>{it.qty}</span>
                   <button className="btn" onClick={() => add(p.id)}>+</button>
                 </div>
               </div>
-              <div className="text-right min-w-[90px]"><strong>{totalLinha.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div>
+              <div className="text-right min-w-[90px]"><strong>{formatPriceEUR(totalLinha)}</strong></div>
             </div>
           );
         })}
       </div>
       <div className="cart-summary card p-4 h-fit">
         <h3 className="font-semibold text-lg">Resumo</h3>
-        <div className="flex justify-between"><span>Subtotal</span><strong>{subtotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div>
-        <div className="flex justify-between"><span>Frete</span><strong>{frete===0? 'Grátis' : frete.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div>
+        <div className="flex justify-between"><span>Subtotal</span><strong>{formatPriceEUR(subtotal)}</strong></div>
+        <div className="flex justify-between"><span>Portes</span><strong>{portes===0? 'Grátis' : formatPriceEUR(portes)}</strong></div>
         <hr className="my-3 border-slate-700" />
-        <div className="flex justify-between text-lg"><span>Total</span><strong>{total.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</strong></div>
-        <button className="btn w-full mt-3">Finalizar compra</button>
+        <div className="flex justify-between text-lg"><span>Total</span><strong>{formatPriceEUR(total)}</strong></div>
+        <button className="btn w-full mt-3">Concluir compra</button>
         <small className="muted">Exemplo sem pagamento real.</small>
       </div>
     </div>

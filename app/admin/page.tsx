@@ -40,7 +40,7 @@ export default function AdminPage(){
     setBusy(true);
     try{
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error('Falha ao salvar');
+        if (!res.ok) throw new Error('Falha ao guardar');
       await mutate('/api/products');
       e.currentTarget.reset();
       alert('Produto adicionado com sucesso!');
@@ -83,7 +83,7 @@ export default function AdminPage(){
             <input name="nome" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: Camiseta Premium" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Preço (R$)</label>
+               <label className="text-slate-400">Preço (€)</label>
             <input name="preco" type="number" min="0" step="0.01" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: 99.90" />
           </div>
           <div className="flex flex-col gap-1">
@@ -104,7 +104,7 @@ export default function AdminPage(){
           <label className="btn btn-ghost cursor-pointer">Importar JSON
             <input type="file" accept="application/json" className="hidden" onChange={onImport} />
           </label>
-          <button type="submit" className="btn" disabled={busy}>{busy? 'Salvando...' : 'Salvar produto'}</button>
+             <button type="submit" className="btn" disabled={busy}>{busy? 'A guardar...' : 'Guardar produto'}</button>
         </div>
       </form>
     </div>

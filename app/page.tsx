@@ -23,9 +23,9 @@ export default function HomePage(){
       <div className="toolbar">
         <h2 className="m-0">Todos os produtos</h2>
         <div className="flex items-center gap-2">
-          <input id="q" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Buscar produtos" />
+          <input id="q" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Procurar produtos" />
           <select id="cat" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
-            <option value="">Todas categorias</option>
+            <option value="">Todas as categorias</option>
             {cats.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
