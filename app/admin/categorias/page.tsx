@@ -2,6 +2,7 @@
 import useSWR, { mutate } from 'swr';
 import { useState } from 'react';
 import type { Category } from '@/lib/categories';
+import Modal from '@/components/Modal';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -10,6 +11,16 @@ export default function AdminCategoriesPage(){
   const list = data || [];
   const [nome, setNome] = useState('');
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // Edit modal state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+
+  // Delete modal state
+  const [delOpen, setDelOpen] = useState(false);
+  const [delId, setDelId] = useState<string | null>(null);
 
   async function createCat(){
     const n = nome.trim(); if (!n) return;
@@ -19,39 +30,59 @@ export default function AdminCategoriesPage(){
       if (!res.ok) throw new Error('Falha ao criar categoria');
       setNome('');
       await mutate('/api/categories');
-      alert('Categoria criada.');
+      setNotice('Categoria criada.');
     }catch(err: any){
-      alert(err.message || 'Erro desconhecido');
+      setNotice(err.message || 'Erro desconhecido');
     }finally{ setBusy(false); }
   }
 
-  async function updateCat(id: string){
+  function openEdit(id: string){
     const current = list.find(c => c.id === id);
-    const novo = prompt('Novo nome da categoria:', current?.nome || '');
-    if (!novo || novo.trim() === current?.nome) return;
+    setEditId(id);
+    setEditName(current?.nome || '');
+    setEditOpen(true);
+  }
+
+  async function submitEdit(e: React.FormEvent){
+    e.preventDefault();
+    if (!editId) return;
+    const novo = editName.trim();
+    if (!novo) { setNotice('Nome inválido.'); return; }
     setBusy(true);
     try{
-      const res = await fetch(`/api/categories/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: novo.trim() }) });
+      const res = await fetch(`/api/categories/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: novo }) });
       if (!res.ok) throw new Error('Falha ao renomear categoria');
       await mutate('/api/categories');
-    }catch(err: any){ alert(err.message || 'Erro desconhecido'); }
+      setEditOpen(false);
+      setEditId(null);
+      setNotice('Categoria renomeada.');
+    }catch(err: any){ setNotice(err.message || 'Erro desconhecido'); }
     finally{ setBusy(false); }
   }
 
-  async function deleteCat(id: string){
-    if (!confirm('Tem a certeza que pretende apagar esta categoria?')) return;
+  function openDelete(id: string){
+    setDelId(id);
+    setDelOpen(true);
+  }
+
+  async function confirmDelete(){
+    if (!delId) return;
     setBusy(true);
     try{
-      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/categories/${delId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Falha ao apagar categoria');
       await mutate('/api/categories');
-    }catch(err: any){ alert(err.message || 'Erro desconhecido'); }
+      setDelOpen(false);
+      setDelId(null);
+      setNotice('Categoria apagada.');
+    }catch(err: any){ setNotice(err.message || 'Erro desconhecido'); }
     finally{ setBusy(false); }
   }
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-3">Categorias</h2>
+      {notice && <div className="mb-3 text-sm text-slate-200 bg-slate-800 border border-slate-700 rounded px-3 py-2">{notice}</div>}
       <div className="card p-4 mb-4 flex gap-2 items-end">
         <div className="flex-1">
           <label className="text-slate-400 block mb-1">Nova categoria</label>
@@ -74,8 +105,8 @@ export default function AdminCategoriesPage(){
                 <td className="px-3 py-2">{c.nome}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">
-                    <button className="btn" onClick={()=>updateCat(c.id)} disabled={busy}>Renomear</button>
-                    <button className="btn btn-ghost" onClick={()=>deleteCat(c.id)} disabled={busy}>Apagar</button>
+                    <button className="btn" onClick={()=>openEdit(c.id)} disabled={busy}>Renomear</button>
+                    <button className="btn btn-ghost" onClick={()=>openDelete(c.id)} disabled={busy}>Apagar</button>
                   </div>
                 </td>
               </tr>
@@ -86,6 +117,31 @@ export default function AdminCategoriesPage(){
           </tbody>
         </table>
       </div>
+
+      {/* Edit modal */}
+      <Modal open={editOpen} title="Renomear categoria" onClose={()=>setEditOpen(false)}
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={()=>setEditOpen(false)} disabled={busy}>Cancelar</button>
+            <button className="btn" form="form-edit" disabled={busy}>Guardar</button>
+          </>
+        }>
+        <form id="form-edit" onSubmit={submitEdit} className="flex flex-col gap-2">
+          <label className="text-slate-400">Novo nome</label>
+          <input value={editName} onChange={e=>setEditName(e.target.value)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: Roupas" autoFocus />
+        </form>
+      </Modal>
+
+      {/* Delete modal */}
+      <Modal open={delOpen} title="Apagar categoria" onClose={()=>setDelOpen(false)}
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={()=>setDelOpen(false)} disabled={busy}>Cancelar</button>
+            <button className="btn" onClick={confirmDelete} disabled={busy}>Apagar</button>
+          </>
+        }>
+        <p>Tem a certeza que pretende apagar esta categoria? Esta ação não pode ser anulada.</p>
+      </Modal>
     </div>
   );
 }
