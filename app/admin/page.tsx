@@ -19,6 +19,7 @@ export default function AdminPage(){
   const [editOpen, setEditOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [edit, setEdit] = useState<{ nome: string; preco: number; categoria: string; imagem: string; descricao: string }>({ nome: '', preco: 0, categoria: '', imagem: '', descricao: '' });
+  const [editFile, setEditFile] = useState<File | null>(null);
 
   // Proteger página: requer sessão
   useState(() => {
@@ -40,7 +41,7 @@ export default function AdminPage(){
       nome: String(fd.get('nome')||'').trim(),
       preco: Number(fd.get('preco')||0),
       categoria: String(fd.get('categoria')||'Outros').trim() || 'Outros',
-      imagem: String(fd.get('imagem')||'').trim(),
+      imagem: '',
       descricao: String(fd.get('descricao')||'').trim(),
     };
     if (!body.nome || !isFinite(body.preco) || body.preco < 0){
@@ -50,6 +51,14 @@ export default function AdminPage(){
     }
     setBusy(true);
     try{
+      // upload image first
+      const file = fd.get('imagemFile') as File | null;
+      if (!file || !file.size) throw new Error('Selecione uma imagem');
+      const up = new FormData(); up.append('file', file);
+      const ur = await fetch('/api/upload', { method: 'POST', body: up });
+      if (!ur.ok) throw new Error('Falha no upload da imagem');
+      const uj = await ur.json();
+      body.imagem = uj.path;
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
         if (!res.ok) throw new Error('Falha ao guardar');
       await mutate('/api/products');
@@ -113,8 +122,8 @@ export default function AdminPage(){
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Imagem (URL)</label>
-            <input name="imagem" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="https://..." />
+            <label className="text-slate-400">Imagem (ficheiro)</label>
+            <input name="imagemFile" type="file" accept="image/*" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
           </div>
         </div>
         <div className="flex flex-col gap-1 mt-3">
@@ -172,7 +181,15 @@ export default function AdminPage(){
           if (!editId) return;
           setBusy(true);
           try{
-            const res = await fetch(`/api/products/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(edit) });
+            const payload = { ...edit } as any;
+            if (editFile && editFile.size){
+              const up = new FormData(); up.append('file', editFile);
+              const ur = await fetch('/api/upload', { method: 'POST', body: up });
+              if (!ur.ok) throw new Error('Falha no upload da imagem');
+              const uj = await ur.json();
+              payload.imagem = uj.path;
+            }
+            const res = await fetch(`/api/products/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) throw new Error('Falha ao atualizar produto');
             await mutate('/api/products');
             setEditOpen(false);
@@ -202,8 +219,9 @@ export default function AdminPage(){
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Imagem (URL)</label>
-            <input value={edit.imagem} onChange={e=>setEdit(s=>({...s, imagem: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            <label className="text-slate-400">Imagem</label>
+            <input type="file" accept="image/*" onChange={e=>setEditFile(e.currentTarget.files?.[0] || null)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            {edit.imagem && <small className="muted">Imagem atual: {edit.imagem}</small>}
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Descrição</label>
