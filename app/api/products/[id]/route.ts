@@ -12,6 +12,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }){
 export async function PUT(request: Request, { params }: { params: { id: string } }){
   const user = await requireAuth(request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const body = await request.json();
   const list = await readProducts();
   const idx = list.findIndex(p => p.id === params.id);
@@ -33,6 +34,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 export async function DELETE(_: Request, { params }: { params: { id: string } }){
   const user = await requireAuth(_ as Request);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user.isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const list = await readProducts();
   const idx = list.findIndex(p => p.id === params.id);
   if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });

@@ -20,3 +20,12 @@ body { background: var(--bg); color: var(--fg); }
 .toolbar { @apply flex items-center justify-between my-4; }
 .muted { @apply text-slate-400; }
 .grid-products { @apply grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]; }
+
+/* Clamp text to two lines with ellipsis */
+.line-clamp-2 {
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

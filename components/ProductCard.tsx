@@ -20,7 +20,7 @@ export default function ProductCard({ p, onDetails }: { p: Product; onDetails?: 
       <img src={p.imagem} alt={p.nome} className="w-full h-40 object-cover bg-slate-800" />
       <div className="card-body flex-1 flex flex-col gap-2">
         <h3 className="font-semibold">{p.nome}</h3>
-        <div className="text-slate-300 text-sm">{p.descricao}</div>
+  <div className="text-slate-300 text-sm line-clamp-2">{p.descricao}</div>
         <div className="mt-auto flex flex-col gap-2">
           <div className="font-bold">{formatPriceEUR(p.preco)}</div>
           <div className="flex gap-2">
