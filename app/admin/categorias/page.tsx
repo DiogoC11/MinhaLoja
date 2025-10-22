@@ -33,7 +33,7 @@ export default function AdminCategoriesPage(){
       setNotice({ text: 'Categoria criada.', kind: 'success' });
       setTimeout(() => setNotice(null), 3000);
     }catch(err: any){
-      setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' });
+      console.error(err);
     }finally{ setBusy(false); }
   }
 
@@ -48,7 +48,7 @@ export default function AdminCategoriesPage(){
     e.preventDefault();
     if (!editId) return;
     const novo = editName.trim();
-  if (!novo) { setNotice({ text: 'Nome inválido.', kind: 'error' }); return; }
+    if (!novo) { return; }
     setBusy(true);
     try{
       const res = await fetch(`/api/categories/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: novo }) });
@@ -57,7 +57,7 @@ export default function AdminCategoriesPage(){
       setEditOpen(false);
       setEditId(null);
       setNotice({ text: 'Categoria renomeada.', kind: 'success' });
-    }catch(err: any){ setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' }); }
+    }catch(err: any){ console.error(err); }
     finally{ setBusy(false); }
   }
 
@@ -76,7 +76,7 @@ export default function AdminCategoriesPage(){
       setDelOpen(false);
       setDelId(null);
       setNotice({ text: 'Categoria apagada.', kind: 'success' });
-    }catch(err: any){ setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' }); }
+    }catch(err: any){ console.error(err); }
     finally{ setBusy(false); }
   }
 
