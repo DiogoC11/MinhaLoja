@@ -19,7 +19,7 @@ export default function Modal({ open, title, onClose, children, footer }: {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-black" onClick={onClose} />
       <div ref={ref} className="relative w-[95vw] max-w-md card p-0 overflow-hidden">
         {title && <div className="px-4 py-3 border-b border-slate-700 font-semibold bg-slate-800">{title}</div>}
         <div className="p-4">
