@@ -36,7 +36,7 @@ export default function HomePage(){
       </div>
       <div className="grid-products" id="grid">
   {list.map((p: Product) => (
-          <div key={p.id} data-cat={(p.categoria||'').toLowerCase()}>
+          <div key={p.id} data-cat={(p.categoria||'').toLowerCase()} className="h-full">
             <ProductCard p={p} onDetails={(id)=>location.href=`/produto/${id}`} />
           </div>
         ))}
