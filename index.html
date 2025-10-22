@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minha Loja</title>
+    <meta name="description" content="Loja simples com carrinho (SPA estática)">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="#/" class="logo">Minha Loja</a>
+        <nav class="nav">
+          <a href="#/produtos">Produtos</a>
+          <a href="#/carrinho" class="cart-link">Carrinho <span id="cart-count" class="badge">0</span></a>
+          <a href="#/admin">Adicionar Produto</a>
+          <a href="#/login" id="auth-link">Entrar</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="app" class="container"></main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© <span id="year"></span> Minha Loja. Todos os direitos reservados.</p>
+      </div>
+    </footer>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
