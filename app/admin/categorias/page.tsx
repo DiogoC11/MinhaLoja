@@ -11,7 +11,7 @@ export default function AdminCategoriesPage(){
   const list = data || [];
   const [nome, setNome] = useState('');
   const [busy, setBusy] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; kind: 'success' | 'error' } | null>(null);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -30,9 +30,10 @@ export default function AdminCategoriesPage(){
       if (!res.ok) throw new Error('Falha ao criar categoria');
       setNome('');
       await mutate('/api/categories');
-      setNotice('Categoria criada.');
+      setNotice({ text: 'Categoria criada.', kind: 'success' });
+      setTimeout(() => setNotice(null), 3000);
     }catch(err: any){
-      setNotice(err.message || 'Erro desconhecido');
+      setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' });
     }finally{ setBusy(false); }
   }
 
@@ -47,7 +48,7 @@ export default function AdminCategoriesPage(){
     e.preventDefault();
     if (!editId) return;
     const novo = editName.trim();
-    if (!novo) { setNotice('Nome inválido.'); return; }
+  if (!novo) { setNotice({ text: 'Nome inválido.', kind: 'error' }); return; }
     setBusy(true);
     try{
       const res = await fetch(`/api/categories/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nome: novo }) });
@@ -55,8 +56,8 @@ export default function AdminCategoriesPage(){
       await mutate('/api/categories');
       setEditOpen(false);
       setEditId(null);
-      setNotice('Categoria renomeada.');
-    }catch(err: any){ setNotice(err.message || 'Erro desconhecido'); }
+      setNotice({ text: 'Categoria renomeada.', kind: 'success' });
+    }catch(err: any){ setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' }); }
     finally{ setBusy(false); }
   }
 
@@ -74,15 +75,26 @@ export default function AdminCategoriesPage(){
       await mutate('/api/categories');
       setDelOpen(false);
       setDelId(null);
-      setNotice('Categoria apagada.');
-    }catch(err: any){ setNotice(err.message || 'Erro desconhecido'); }
+      setNotice({ text: 'Categoria apagada.', kind: 'success' });
+    }catch(err: any){ setNotice({ text: err.message || 'Erro desconhecido', kind: 'error' }); }
     finally{ setBusy(false); }
   }
 
   return (
     <div>
       <h2 className="text-xl font-semibold mb-3">Categorias</h2>
-      {notice && <div className="mb-3 text-sm text-slate-200 bg-slate-800 border border-slate-700 rounded px-3 py-2">{notice}</div>}
+      {notice && (
+        <div
+          className={
+            `mb-3 text-sm rounded px-3 py-2 border ` +
+            (notice.kind === 'success'
+              ? 'text-green-200 bg-green-900/50 border-green-700'
+              : 'text-red-200 bg-red-900/50 border-red-700')
+          }
+        >
+          {notice.text}
+        </div>
+      )}
       <div className="card p-4 mb-4 flex gap-2 items-end">
         <div className="flex-1">
           <label className="text-slate-400 block mb-1">Nova categoria</label>

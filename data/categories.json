@@ -3,5 +3,10 @@
     "id": "cat-roupa-7fmi7w",
     "nome": "Roupa",
     "createdAt": 1761173900824
+  },
+  {
+    "id": "cat-carro-tv58ki",
+    "nome": "Carro",
+    "createdAt": 1761174205644
   }
 ]
