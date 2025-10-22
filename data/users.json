@@ -1,12 +1,21 @@
 [
   {
+    "id": "u-admin-gmail-com-abcdef",
+    "name": "admin",
+    "email": "admin@gmail.com",
+    "passHash": "JXnwyF/WsiI2i75UJMVUWWHxZ3h9ICsZymjQhrqNmqsTVLT/ZnE1iRKnwm3UBSMA6o3pYKxjc6P/0vbRoyiIKg==",
+    "salt": "hUUk8npwQy9rf5WHioNxrQ==",
+    "createdAt": 1761172746476,
+    "isAdmin": true
+  },
+  {
     "id": "u-diogo-gmail-com-9iwfib",
     "name": "diogo",
     "email": "diogo@gmail.com",
     "passHash": "6XaqDBibweXXVnJ+uQKwdUiZKKq6DKqf5aNlMZjla44SkNxb/xMgFrEiSaWdu0U3k3gHdZObZ0SRiZNawAQc4w==",
     "salt": "bB1OkI4lMJagTUQcCm7ybA==",
     "createdAt": 1761138934191,
-    "isAdmin": true
+    "isAdmin": false
   },
   {
     "id": "u-torres-gmail-com-5bmchb",
