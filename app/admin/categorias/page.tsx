@@ -33,7 +33,8 @@ export default function AdminCategoriesPage(){
       setNotice({ text: 'Categoria criada.', kind: 'success' });
       setTimeout(() => setNotice(null), 3000);
     }catch(err: any){
-      console.error(err);
+      setNotice({ text: err?.message || 'Erro desconhecido', kind: 'error' });
+      setTimeout(() => setNotice(null), 3000);
     }finally{ setBusy(false); }
   }
 
@@ -57,7 +58,10 @@ export default function AdminCategoriesPage(){
       setEditOpen(false);
       setEditId(null);
       setNotice({ text: 'Categoria renomeada.', kind: 'success' });
-    }catch(err: any){ console.error(err); }
+    }catch(err: any){
+      setNotice({ text: err?.message || 'Erro desconhecido', kind: 'error' });
+      setTimeout(() => setNotice(null), 3000);
+    }
     finally{ setBusy(false); }
   }
 
@@ -76,7 +80,10 @@ export default function AdminCategoriesPage(){
       setDelOpen(false);
       setDelId(null);
       setNotice({ text: 'Categoria apagada.', kind: 'success' });
-    }catch(err: any){ console.error(err); }
+    }catch(err: any){
+      setNotice({ text: err?.message || 'Erro desconhecido', kind: 'error' });
+      setTimeout(() => setNotice(null), 3000);
+    }
     finally{ setBusy(false); }
   }
 
