@@ -21,7 +21,7 @@ export default function ProductCard({ p, onDetails }: { p: Product; onDetails?: 
       <div className="card-body flex-1 flex flex-col gap-2">
         <h3 className="font-semibold">{p.nome}</h3>
         <div className="text-slate-300 text-sm">{p.descricao}</div>
-        <div className="mt-auto flex items-center justify-between gap-2">
+        <div className="mt-auto flex flex-col gap-2">
           <div className="font-bold">{formatPriceEUR(p.preco)}</div>
           <div className="flex gap-2">
             <button className="btn" onClick={() => add(p.id)}>Adicionar</button>
