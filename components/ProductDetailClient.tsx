@@ -11,6 +11,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 export default function ProductDetailClient({ product, isAdmin }: { product: Product; isAdmin: boolean }){
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [cur, setCur] = useState<Product>({ ...product });
   const [edit, setEdit] = useState({ ...product });
   const [file, setFile] = useState<File | null>(null);
   const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
@@ -31,6 +32,8 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
       const res = await fetch(`/api/products/${product.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Falha ao actualizar produto');
       await mutate('/api/products');
+      // update local view
+      setCur(c => ({ ...c, ...payload }));
       setOpen(false);
     }finally{ setBusy(false); }
   }
@@ -38,17 +41,17 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
   return (
     <div>
       <section className="hero">
-        <h2 className="text-xl font-semibold mb-2">{product.nome}</h2>
+        <h2 className="text-xl font-semibold mb-2">{cur.nome}</h2>
         <div className="card overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.imagem} alt={product.nome} className="w-full max-h-[400px] object-cover" />
+          <img src={cur.imagem} alt={cur.nome} className="w-full max-h-[400px] object-cover" />
           <div className="card-body">
-            <div className="text-slate-300 mb-2">{product.descricao}</div>
-            <div className="font-bold mb-3">{formatPriceEUR(product.preco)}</div>
+            <div className="text-slate-300 mb-2">{cur.descricao}</div>
+            <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>
             <div className="flex gap-2">
               <a className="btn" href="/carrinho">Ir ao carrinho</a>
               <a className="btn btn-ghost" href="/produtos">Voltar</a>
-              {isAdmin && <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...product }); setFile(null); setOpen(true); }}>Editar</button>}
+              {isAdmin && <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>}
             </div>
           </div>
         </div>
