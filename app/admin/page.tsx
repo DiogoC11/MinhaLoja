@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import type { Product } from '@/components/ProductCard';
+import type { Category } from '@/lib/categories';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function AdminPage(){
   const { data } = useSWR<Product[]>('/api/products', fetcher);
+  const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
 
@@ -88,7 +90,10 @@ export default function AdminPage(){
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Categoria</label>
-            <input name="categoria" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: Roupas" />
+            <select name="categoria" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
+              <option value="">Selecione uma categoria</option>
+              {(catsData||[]).map((c:any)=> <option key={c.id} value={c.nome}>{c.nome}</option>)}
+            </select>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Imagem (URL)</label>

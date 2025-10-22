@@ -1,14 +1,18 @@
 "use client";
 import useSWR from 'swr';
 import ProductCard, { type Product } from '@/components/ProductCard';
+import type { Category } from '@/lib/categories';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function HomePage(){
   const { data } = useSWR<Product[]>('/api/products', fetcher);
+  const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
   const list = data || [];
-
-  const cats = Array.from(new Set(list.map((p: Product) => p.categoria)));
+  const catsFromApi = (catsData || []) as unknown as Category[];
+  const cats = (catsFromApi && catsFromApi.length > 0)
+    ? catsFromApi.map(c => c.nome)
+    : Array.from(new Set(list.map((p: Product) => p.categoria)));
 
   function applyFilter(q: string, cat: string){
     q = (q || '').toLowerCase();
@@ -26,12 +30,16 @@ export default function HomePage(){
           <input id="q" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Procurar produtos" />
           <select id="cat" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
             <option value="">Todas as categorias</option>
-            {cats.map(c => <option key={c} value={c}>{c}</option>)}
+            {cats.map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
           </select>
         </div>
       </div>
       <div className="grid-products" id="grid">
-  {list.map((p: Product) => <ProductCard key={p.id} p={p} onDetails={(id)=>location.href=`/produto/${id}`} />)}
+  {list.map((p: Product) => (
+          <div key={p.id} data-cat={(p.categoria||'').toLowerCase()}>
+            <ProductCard p={p} onDetails={(id)=>location.href=`/produto/${id}`} />
+          </div>
+        ))}
       </div>
       <script dangerouslySetInnerHTML={{__html:`
         (function(){
@@ -45,7 +53,8 @@ export default function HomePage(){
             items.forEach((item) => {
               const name = item.querySelector('h3')?.textContent?.toLowerCase()||'';
               const desc = item.querySelector('.text-slate-300')?.textContent?.toLowerCase()||'';
-              const match = (!qs || (name + ' ' + desc).includes(qs));
+              const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
+              const match = (!qs || (name + ' ' + desc).includes(qs)) && (!cs || catVal === cs);
               item.style.display = match ? '' : 'none';
             });
           }
