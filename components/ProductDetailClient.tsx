@@ -44,6 +44,8 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
         }
         payload.imagens = uploaded;
         payload.imagem = uploaded[0] || payload.imagem;
+      } else if (Array.isArray(payload.imagens)) {
+        payload.imagem = payload.imagens[0] || '';
       }
       const res = await fetch(`/api/products/${product.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Falha ao actualizar produto');
@@ -159,15 +161,35 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             {previews.length > 0 ? (
               <div className="flex flex-wrap gap-2 mt-2">
                 {previews.map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                      onClick={() => {
+                        setFiles(fs => fs.filter((_, idx) => idx !== i));
+                        setPreviews(prev => {
+                          const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
+                          return prev.filter((_, idx) => idx !== i);
+                        });
+                      }}>🗑</button>
+                  </div>
                 ))}
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mt-2">
                 {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                      onClick={() => {
+                        setEdit(s => {
+                          const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
+                          imgs.splice(i, 1);
+                          return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
+                        });
+                      }}>🗑</button>
+                  </div>
                 ))}
               </div>
             )}

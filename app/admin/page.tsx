@@ -150,8 +150,18 @@ export default function AdminPage(){
             {createPreviews.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {createPreviews.map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                      onClick={() => {
+                        setCreateFiles(fs => fs.filter((_, idx) => idx !== i));
+                        setCreatePreviews(prev => {
+                          const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
+                          return prev.filter((_, idx) => idx !== i);
+                        });
+                      }}>🗑</button>
+                  </div>
                 ))}
               </div>
             )}
@@ -223,6 +233,9 @@ export default function AdminPage(){
               }
               payload.imagens = uploaded;
               payload.imagem = uploaded[0] || payload.imagem;
+            } else if (Array.isArray(payload.imagens)) {
+              // Garantir que a principal acompanha a 1ª imagem
+              payload.imagem = payload.imagens[0] || '';
             }
             const res = await fetch(`/api/products/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) throw new Error('Falha ao atualizar produto');
@@ -264,15 +277,35 @@ export default function AdminPage(){
             {editPreviews.length > 0 ? (
               <div className="flex flex-wrap gap-2 mt-2">
                 {editPreviews.map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                      onClick={() => {
+                        setEditFiles(fs => fs.filter((_, idx) => idx !== i));
+                        setEditPreviews(prev => {
+                          const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
+                          return prev.filter((_, idx) => idx !== i);
+                        });
+                      }}>🗑</button>
+                  </div>
                 ))}
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 mt-2">
                 {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img key={i} src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                      onClick={() => {
+                        setEdit(s => {
+                          const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
+                          imgs.splice(i, 1);
+                          return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
+                        });
+                      }}>🗑</button>
+                  </div>
                 ))}
               </div>
             )}
