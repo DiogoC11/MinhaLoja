@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { genSalt, hashPassword, readUsers, writeUsers, genUserId, setSessionCookie } from '@/lib/auth';
+import { genSalt, hashPassword, readUsers, writeUsers, genUserId } from '@/lib/auth';
+import crypto from 'crypto';
+import { queueEmail } from '@/lib/mail';
 
 export async function POST(request: Request){
-  const body = await request.json();
-  const name = String(body.name || '').trim();
-  const email = String(body.email || '').trim().toLowerCase();
-  const password = String(body.password || '');
+  const bodyReq = await request.json();
+  const name = String(bodyReq.name || '').trim();
+  const email = String(bodyReq.email || '').trim().toLowerCase();
+  const password = String(bodyReq.password || '');
   if (!name || !email || password.length < 6){
     return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 });
   }
@@ -15,10 +17,15 @@ export async function POST(request: Request){
   }
   const salt = genSalt();
   const passHash = await hashPassword(password, salt);
-  const user = { id: genUserId(email), name, email, passHash, salt, createdAt: Date.now(), isAdmin: false };
+  const verifyToken = crypto.randomBytes(24).toString('base64url');
+  const verifyTokenExpires = Date.now() + 1000 * 60 * 60 * 48; // 48h
+  const user = { id: genUserId(email), name, email, passHash, salt, createdAt: Date.now(), isAdmin: false, isVerified: false, verifyToken, verifyTokenExpires };
   users.push(user);
   await writeUsers(users);
-  const res = NextResponse.json({ id: user.id, name: user.name, email: user.email }, { status: 201 });
-  setSessionCookie(res, user.id);
-  return res;
+  const origin = new URL(request.url).origin;
+  const link = `${origin}/api/auth/verify?token=${verifyToken}`;
+  const subject = 'Verifique o seu e-mail';
+  const emailBody = `Olá ${name},\n\nClique para verificar: ${link}\n\nEste link expira em 48 horas.`;
+  await queueEmail(email, subject, emailBody);
+  return NextResponse.json({ id: user.id, name: user.name, email: user.email, verifyLink: link, message: 'Registo criado. Verifique o seu e-mail para ativar a conta.' }, { status: 201 });
 }

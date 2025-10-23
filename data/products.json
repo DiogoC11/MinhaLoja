@@ -4,8 +4,11 @@
     "nome": "Camiseta Básica",
     "preco": 49.9,
     "descricao": "Camiseta 100% algodão, confortável e estilosa.",
-    "imagem": "/uploads/img-1761260558840-eid4q1fq.jpg",
-    "categoria": "Roupa"
+    "imagem": "/uploads/img-1761261167776-5cv9q75h.jpg",
+    "categoria": "Roupa",
+    "imagens": [
+      "/uploads/img-1761261167776-5cv9q75h.jpg"
+    ]
   },
   {
     "id": "p2",

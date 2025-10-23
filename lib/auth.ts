@@ -12,6 +12,9 @@ export type User = {
   salt: string;     // base64
   createdAt: number;
   isAdmin?: boolean; // optional admin flag
+  isVerified?: boolean; // email verificado
+  verifyToken?: string; // token de verificação pendente
+  verifyTokenExpires?: number; // epoch ms
 };
 
 const DATA_DIR = path.join(process.cwd(), 'data');

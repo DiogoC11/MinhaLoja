@@ -67,11 +67,11 @@ export default function LoginPage(){
     const email = String(fd.get('email')||'').trim();
     const password = String(fd.get('password')||'');
     const res = await fetch('/api/auth/register', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, email, password }) });
-    if (!res.ok) throw new Error((await res.json()).error || 'Falha ao criar conta');
-    const { id, name: nm, email: em } = await res.json();
-    setUser({ id, name: nm, email: em });
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event('auth:changed'));
-    router.push('/');
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.error || 'Falha ao criar conta');
+    // Não autenticar automaticamente; instruir o utilizador a verificar o e-mail
+    alert('Registo criado. Enviámos um e-mail de verificação. Por favor, verifique a sua caixa de correio para ativar a conta.');
+    setTab('login');
   }
 
   async function onLogout(){
@@ -153,7 +153,7 @@ export default function LoginPage(){
           </form>
         )}
 
-        <p className="text-center text-slate-400 text-sm mt-4">As suas credenciais são guardadas no seu navegador com hash de palavra‑passe (SHA‑256 + sal). Para produção, use backend com bcrypt/argon2.</p>
+        <p className="text-center text-slate-400 text-sm mt-4">Após criar conta, verifique o seu e‑mail para poder entrar.</p>
       </div>
     </div>
   );

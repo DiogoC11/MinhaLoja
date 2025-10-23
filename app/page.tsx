@@ -74,7 +74,7 @@ export default function HomePage(){
                   <small id="maxPriceErr" className="text-red-400 text-xs hidden">O máximo não pode ser inferior ao mínimo.</small>
                 </div>
               </div>
-              <small className="muted">A lista actualiza conforme altera os valores.</small>
+              
             </div>
           </div>
         </aside>
