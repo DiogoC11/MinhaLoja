@@ -5,5 +5,12 @@
     "subject": "Verifique o seu e-mail",
     "body": "Olá DiogoCardoso,\n\nClique para verificar: http://localhost:3000/api/auth/verify?token=OyGppRPlMTG7HlSYB56gXsKn95HuZRol\n\nEste link expira em 48 horas.",
     "createdAt": 1761261518409
+  },
+  {
+    "id": "mh41vbx51rha4n1w0trj",
+    "to": "diogo.a.cardoso.2005@gmail.com",
+    "subject": "Verifique o seu e-mail (novo link)",
+    "body": "Olá,\n\nSegue um novo link de verificação: http://localhost:3000/api/auth/verify?token=rqBwPGCb5dBUHnqUMbmMZHq2hLo9nigR\n\nEste link expira em 48 horas.",
+    "createdAt": 1761261915929
   }
 ]

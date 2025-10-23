@@ -33,8 +33,6 @@
     "salt": "/lOVU1H0/gbOXNHaP6WrzQ==",
     "createdAt": 1761261518403,
     "isAdmin": false,
-    "isVerified": false,
-    "verifyToken": "OyGppRPlMTG7HlSYB56gXsKn95HuZRol",
-    "verifyTokenExpires": 1761434318402
+    "isVerified": true
   }
 ]
