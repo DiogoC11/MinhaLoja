@@ -44,6 +44,7 @@ export default function LoginPage(){
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
     fetch('/api/auth/me', { cache: 'no-store' }).then(r=>r.json()).then(({ user })=> setUser(user||null)).catch(()=>setUser(null));
@@ -59,6 +60,20 @@ export default function LoginPage(){
     setUser({ id, name, email: em });
     if (typeof window !== 'undefined') window.dispatchEvent(new Event('auth:changed'));
     router.push('/');
+  }
+
+  async function onResend(targetForm?: HTMLFormElement | null){
+    try{
+      setResending(true);
+      const form = targetForm || document.querySelector('#form-login') as HTMLFormElement | null;
+      const emailInput = form?.querySelector('input[name="email"]') as HTMLInputElement | null;
+      const email = String(emailInput?.value || '').trim();
+      if (!email){ alert('Introduza o e‑mail no campo acima para reenviar.'); return; }
+      const res = await fetch('/api/auth/resend', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+      const payload = await res.json().catch(()=>({}));
+      if (payload.verifyLink){ try { window.open(payload.verifyLink, '_blank'); } catch {} }
+      alert('Se existir uma conta por verificar para esse e‑mail, enviámos um novo link de verificação.');
+    } finally { setResending(false); }
   }
 
   async function onRegister(form: HTMLFormElement){
@@ -114,7 +129,7 @@ export default function LoginPage(){
         </div>
 
         {tab==='login' ? (
-          <form className="card p-6 backdrop-blur bg-slate-900/60 border border-slate-700/70 shadow-xl" onSubmit={async (e)=>{
+          <form id="form-login" className="card p-6 backdrop-blur bg-slate-900/60 border border-slate-700/70 shadow-xl" onSubmit={async (e)=>{
             e.preventDefault();
             try{ setLoading(true); await onLogin(e.currentTarget); } catch(err:any){ alert(err.message||'Falha ao entrar'); } finally{ setLoading(false); }
           }}>
@@ -128,8 +143,11 @@ export default function LoginPage(){
                 <input name="password" type={showPass?'text':'password'} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 pr-10" required />
                 <button type="button" className="absolute right-2 bottom-2 text-slate-400 hover:text-white text-sm" onClick={()=>setShowPass(p=>!p)}>{showPass?'Ocultar':'Mostrar'}</button>
               </label>
-              <div className="mt-2">
+              <div className="mt-2 flex flex-col gap-2">
                 <button className="btn w-full" type="submit" disabled={loading}>{loading? 'Entrando…' : 'Entrar'}</button>
+                <button type="button" className="text-slate-300 hover:text-white text-sm underline underline-offset-2" onClick={(e)=>onResend(e.currentTarget.form)} disabled={resending}>
+                  {resending ? 'A reenviar…' : 'Não recebeu o e‑mail? Reenviar verificação'}
+                </button>
               </div>
             </div>
           </form>
