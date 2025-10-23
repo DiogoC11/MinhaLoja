@@ -18,12 +18,16 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   const idx = list.findIndex(p => p.id === params.id);
   if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const old = list[idx];
+  const imagens = Array.isArray(body.imagens)
+    ? body.imagens.map((s: unknown) => String(s || '').trim()).filter((s: string) => s.length > 0).slice(0, 10)
+    : undefined;
   const updated: Product = {
     ...old,
     nome: body.nome != null ? String(body.nome) : old.nome,
     preco: body.preco != null ? Number(body.preco) : old.preco,
     descricao: body.descricao != null ? String(body.descricao) : old.descricao,
     imagem: body.imagem != null ? String(body.imagem) : old.imagem,
+    ...(imagens ? { imagens } : {}),
     categoria: body.categoria != null ? String(body.categoria) : old.categoria,
   };
   list[idx] = updated;

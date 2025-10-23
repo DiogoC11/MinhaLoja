@@ -6,7 +6,8 @@ export type Product = {
   nome: string;
   preco: number;
   descricao: string;
-  imagem: string;
+  imagem: string; // principal (legado)
+  imagens?: string[]; // opcional: múltiplas imagens
   categoria: string;
 };
 

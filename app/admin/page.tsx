@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
-import type { Product } from '@/components/ProductCard';
+import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
 import Modal from '@/components/Modal';
 import { formatPriceEUR } from '@/lib/format';

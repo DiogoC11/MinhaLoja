@@ -4,7 +4,7 @@
     "nome": "Camiseta Básica",
     "preco": 49.9,
     "descricao": "Camiseta 100% algodão, confortável e estilosa.",
-    "imagem": "/uploads/img-1761177193588-hc56shp6.png",
+    "imagem": "/uploads/img-1761260065463-qw0b4isr.jpg",
     "categoria": "Roupa"
   },
   {
@@ -21,7 +21,7 @@
     "preco": 319,
     "descricao": "Design minimalista com pulseira em couro.",
     "imagem": "https://picsum.photos/id/1060/600/400",
-    "categoria": "Acessórios"
+    "categoria": "Enfeite"
   },
   {
     "id": "p4",
@@ -29,7 +29,7 @@
     "preco": 159.5,
     "descricao": "Compartimentos internos e material resistente à água.",
     "imagem": "https://picsum.photos/id/1062/600/400",
-    "categoria": "Acessórios"
+    "categoria": "Enfeite"
   },
   {
     "id": "p5",
@@ -37,7 +37,7 @@
     "preco": 199.9,
     "descricao": "Cancelamento de ruído e bateria de longa duração.",
     "imagem": "https://picsum.photos/id/1080/600/400",
-    "categoria": "Eletrônicos"
+    "categoria": "Enfeite"
   },
   {
     "id": "p6",
@@ -45,7 +45,7 @@
     "preco": 269.9,
     "descricao": "Clássica e versátil para todas as estações.",
     "imagem": "https://picsum.photos/id/111/600/400",
-    "categoria": "Roupas"
+    "categoria": "Roupa"
   },
   {
     "id": "p7",
@@ -53,7 +53,7 @@
     "preco": 69.9,
     "descricao": "Ajustável, com logo bordado.",
     "imagem": "https://picsum.photos/id/28/600/400",
-    "categoria": "Acessórios"
+    "categoria": "Roupa"
   },
   {
     "id": "p8",
@@ -61,7 +61,7 @@
     "preco": 89.9,
     "descricao": "Mantém sua bebida quente ou fria por horas.",
     "imagem": "https://picsum.photos/id/29/600/400",
-    "categoria": "Casa"
+    "categoria": "Enfeite"
   },
   {
     "id": "pretos-15md72",

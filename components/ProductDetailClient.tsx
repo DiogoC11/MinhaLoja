@@ -1,7 +1,7 @@
 "use client";
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Modal from '@/components/Modal';
-import type { Product } from '@/components/ProductCard';
+import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
 import useSWR, { mutate } from 'swr';
 import { formatPriceEUR } from '@/lib/format';
@@ -20,6 +20,10 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
   const [file, setFile] = useState<File | null>(null);
   const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
   const cats = catsData || [];
+  const imgs = useMemo(() => (cur.imagens && cur.imagens.length ? cur.imagens : [cur.imagem]).slice(0, 10), [cur]);
+  const [imgIdx, setImgIdx] = useState(0);
+  const prev = () => setImgIdx(i => (i - 1 + imgs.length) % imgs.length);
+  const next = () => setImgIdx(i => (i + 1) % imgs.length);
 
   async function submit(e: React.FormEvent){
     e.preventDefault(); if (!isAdmin) return;
@@ -62,8 +66,40 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
       <section className="hero">
         <h2 className="text-xl font-semibold mb-2">{cur.nome}</h2>
         <div className="card overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cur.imagem} alt={cur.nome} className="w-full max-h-[400px] object-contain bg-slate-800" />
+          <div className="relative group">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imgs[imgIdx]} alt={cur.nome} className="w-full max-h-[400px] object-contain bg-slate-800" />
+            {imgs.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Imagem anterior"
+                  onClick={prev}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  aria-label="Próxima imagem"
+                  onClick={next}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                >
+                  ›
+                </button>
+                <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                  {imgs.map((_, i) => (
+                    <button
+                      key={i}
+                      aria-label={`Ir para imagem ${i + 1}`}
+                      onClick={() => setImgIdx(i)}
+                      className={`w-2.5 h-2.5 rounded-full ${i === imgIdx ? 'bg-white' : 'bg-white/50'}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <div className="card-body">
             <div className="text-slate-300 mb-2">{cur.descricao}</div>
             <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>

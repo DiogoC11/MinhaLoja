@@ -1,7 +1,7 @@
 "use client";
 import useSWR from 'swr';
 import { useCart } from '@/components/CartContext';
-import type { Product } from '@/components/ProductCard';
+import type { Product } from '@/lib/fsdb';
 import { formatPriceEUR } from '@/lib/format';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -31,7 +31,7 @@ export default function CartPage(){
           return (
             <div key={it.id} className="cart-item grid grid-cols-[72px_1fr_auto] gap-3 items-center card p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.imagem} alt={p.nome} className="w-[72px] h-[72px] object-contain rounded bg-slate-800" />
+              <img src={(p.imagens && p.imagens[0]) || p.imagem} alt={p.nome} className="w-[72px] h-[72px] object-contain rounded bg-slate-800" />
               <div>
                 <div className="flex items-center justify-between">
                   <strong>{p.nome}</strong>

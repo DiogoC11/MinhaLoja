@@ -1,6 +1,7 @@
 "use client";
 import useSWR from 'swr';
-import ProductCard, { type Product } from '@/components/ProductCard';
+import ProductCard from '@/components/ProductCard';
+import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -15,9 +16,12 @@ export default function HomePage(){
   const minPriceInt = Math.floor(minPrice);
   const maxPriceInt = Math.ceil(maxPrice);
   const catsFromApi = (catsData || []) as unknown as Category[];
+  const presentCatsSet = new Set(list.map((p: Product) => (p.categoria||'').trim()).filter(Boolean));
   const cats = (catsFromApi && catsFromApi.length > 0)
-    ? catsFromApi.map(c => c.nome)
-    : Array.from(new Set(list.map((p: Product) => p.categoria)));
+    // Mantém ordem do API mas filtra para apenas categorias com pelo menos 1 produto
+    ? catsFromApi.map(c => c.nome).filter(nome => presentCatsSet.has((nome||'').trim()))
+    // Fallback: deriva diretamente dos produtos
+    : Array.from(presentCatsSet);
 
   return (
     <div>
@@ -86,8 +90,10 @@ export default function HomePage(){
           const maxI = document.getElementById('maxPriceI');
           const minErr = document.getElementById('minPriceErr');
           const maxErr = document.getElementById('maxPriceErr');
-          const minBound = parseInt(minI.min||'0', 10);
+          const minBound = parseInt(minI.min||'0', 10); // limites iniciais (todos os produtos)
           const maxBound = parseInt(maxI.max||'0', 10);
+          let curMinBound = minBound; // limites dinâmicos conforme filtros aplicados
+          let curMaxBound = maxBound;
           let lastChanged = null;
 
           function filter(){
@@ -95,12 +101,38 @@ export default function HomePage(){
             const strip = (s) => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const qs = strip(q.value||'').toLowerCase();
             const cs = (cat.value||'').toLowerCase();
-            // Forçar valores inteiros
+            const items = Array.from(grid.children);
+
+            // Calcular limites dinâmicos (min/max) apenas com base nos itens que passam por nome+categoria
+            const pricesForBounds = [];
+            items.forEach((item) => {
+              const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
+              const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
+              const price = parseFloat(item.getAttribute('data-price')||'0');
+              const baseMatch = (!qs || name.includes(qs)) && (!cs || catVal === cs);
+              if (baseMatch) pricesForBounds.push(price);
+            });
+            if (pricesForBounds.length > 0){
+              curMinBound = Math.floor(Math.min.apply(null, pricesForBounds));
+              curMaxBound = Math.ceil(Math.max.apply(null, pricesForBounds));
+            } else {
+              // Quando nenhum item é mostrado pelo filtro base, manter limites iniciais
+              curMinBound = minBound; curMaxBound = maxBound;
+            }
+
+            // Atualizar atributos e placeholders dos inputs conforme limites dinâmicos
+            minI.min = String(curMinBound); maxI.max = String(curMaxBound);
+            minI.placeholder = String(curMinBound); maxI.placeholder = String(curMaxBound);
+
+            // Forçar valores inteiros e restringir aos novos limites
             let minVal = parseFloat(minI.value);
             let maxVal = parseFloat(maxI.value);
-            if (!isFinite(minVal)) minVal = minBound; if (!isFinite(maxVal)) maxVal = maxBound;
+            if (!isFinite(minVal)) minVal = curMinBound; if (!isFinite(maxVal)) maxVal = curMaxBound;
             minVal = Math.round(minVal); maxVal = Math.round(maxVal);
-            // Refletir coerção no input para evitar floats
+            // Ajustar aos limites dinâmicos
+            if (minVal < curMinBound) minVal = curMinBound;
+            if (maxVal > curMaxBound) maxVal = curMaxBound;
+            // Refletir coerção no input para evitar floats/out-of-bounds
             if (String(minI.value) !== String(minVal)) minI.value = String(minVal);
             if (String(maxI.value) !== String(maxVal)) maxI.value = String(maxVal);
             const invalidRange = minVal > maxVal;
@@ -122,13 +154,13 @@ export default function HomePage(){
               minErr?.classList.add('hidden');
               maxErr?.classList.add('hidden');
             }
-            const items = Array.from(grid.children);
             items.forEach((item) => {
               const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
+              const baseMatch = (!qs || name.includes(qs)) && (!cs || catVal === cs);
               const inRange = invalidRange ? true : (price >= minVal && price <= maxVal);
-              const match = (!qs || name.includes(qs)) && (!cs || catVal === cs) && inRange;
+              const match = baseMatch && inRange;
               item.style.display = match ? '' : 'none';
             });
           }
