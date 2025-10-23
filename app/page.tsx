@@ -12,6 +12,8 @@ export default function HomePage(){
   const prices = list.map((p: Product) => p.preco);
   const minPrice = prices.length ? Math.min(...prices) : 0;
   const maxPrice = prices.length ? Math.max(...prices) : 0;
+  const minPriceInt = Math.floor(minPrice);
+  const maxPriceInt = Math.ceil(maxPrice);
   const catsFromApi = (catsData || []) as unknown as Category[];
   const cats = (catsFromApi && catsFromApi.length > 0)
     ? catsFromApi.map(c => c.nome)
@@ -57,14 +59,14 @@ export default function HomePage(){
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <small className="muted">Mínimo</small>
-                  <input id="minPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={minPrice}
-                    placeholder={String(minPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                  <input id="minPriceI" type="number" step={1} inputMode="numeric" min={minPriceInt} max={maxPriceInt} defaultValue={minPriceInt}
+                    placeholder={String(minPriceInt)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
                   <small id="minPriceErr" className="text-red-400 text-xs hidden">O mínimo não pode ser superior ao máximo.</small>
                 </div>
                 <div className="flex flex-col gap-1">
                   <small className="muted">Máximo</small>
-                  <input id="maxPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={maxPrice}
-                    placeholder={String(maxPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                  <input id="maxPriceI" type="number" step={1} inputMode="numeric" min={minPriceInt} max={maxPriceInt} defaultValue={maxPriceInt}
+                    placeholder={String(maxPriceInt)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
                   <small id="maxPriceErr" className="text-red-400 text-xs hidden">O máximo não pode ser inferior ao mínimo.</small>
                 </div>
               </div>
@@ -84,17 +86,23 @@ export default function HomePage(){
           const maxI = document.getElementById('maxPriceI');
           const minErr = document.getElementById('minPriceErr');
           const maxErr = document.getElementById('maxPriceErr');
-          const minBound = parseFloat(minI.min||'0');
-          const maxBound = parseFloat(maxI.max||'0');
+          const minBound = parseInt(minI.min||'0', 10);
+          const maxBound = parseInt(maxI.max||'0', 10);
           let lastChanged = null;
 
           function filter(){
-            const qs = (q.value||'').toLowerCase();
+            // Pesquisa sem acentos
+            const strip = (s) => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const qs = strip(q.value||'').toLowerCase();
             const cs = (cat.value||'').toLowerCase();
+            // Forçar valores inteiros
             let minVal = parseFloat(minI.value);
             let maxVal = parseFloat(maxI.value);
-            if (!isFinite(minVal)) minVal = minBound;
-            if (!isFinite(maxVal)) maxVal = maxBound;
+            if (!isFinite(minVal)) minVal = minBound; if (!isFinite(maxVal)) maxVal = maxBound;
+            minVal = Math.round(minVal); maxVal = Math.round(maxVal);
+            // Refletir coerção no input para evitar floats
+            if (String(minI.value) !== String(minVal)) minI.value = String(minVal);
+            if (String(maxI.value) !== String(maxVal)) maxI.value = String(maxVal);
             const invalidRange = minVal > maxVal;
 
             // Show/hide inline error messages when the range is invalid
@@ -116,8 +124,8 @@ export default function HomePage(){
             }
             const items = Array.from(grid.children);
             items.forEach((item) => {
-              const name = item.querySelector('h3')?.textContent?.toLowerCase()||'';
-              const desc = item.querySelector('.text-slate-300')?.textContent?.toLowerCase()||'';
+              const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
+              const desc = strip(item.querySelector('.text-slate-300')?.textContent||'').toLowerCase();
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
               const inRange = invalidRange ? true : (price >= minVal && price <= maxVal);
