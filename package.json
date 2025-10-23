@@ -9,7 +9,9 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "prepare": "husky",
-    "clean": "node -e \"try{require('fs').rmSync('.next',{recursive:true,force:true})}catch(e){}\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate": "npm run lint && npm run typecheck",
+    "clean": "node -e \"const fs=require('fs');['.next','.next-dev'].forEach(d=>{try{fs.rmSync(d,{recursive:true,force:true})}catch(e){}})\"",
     "dev:clean": "npm run clean && next dev -p 3000"
   },
   "dependencies": {
