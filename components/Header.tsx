@@ -53,7 +53,13 @@ export default function Header(){
             <Link href="/admin">Adicionar produto</Link>
             <Link href="/admin/categorias">Categorias</Link>
           </>}
-          <Link href="/login" id="auth-link">{authLabel}</Link>
+          <Link href="/login" id="auth-link" className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>{authLabel}</span>
+          </Link>
         </nav>
       </div>
     </header>
