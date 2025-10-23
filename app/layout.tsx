@@ -14,10 +14,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col">
         <CartProvider>
           <Header />
-          <main className="container py-4 flex-1">{children}</main>
+          <main className="mx-auto w-[80%] py-4 flex-1">{children}</main>
         </CartProvider>
         <footer className="border-t border-slate-700/70 mt-8 py-6 text-slate-400">
-          <div className="mx-auto w-[90%]">© {new Date().getFullYear()} Minha Loja</div>
+          <div className="mx-auto w-[80%]">© {new Date().getFullYear()} Minha Loja</div>
         </footer>
       </body>
     </html>
