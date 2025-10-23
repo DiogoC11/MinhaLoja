@@ -70,13 +70,5 @@
     "descricao": "Forte",
     "imagem": "/uploads/img-1761255897792-86ztyhlc.jpg",
     "categoria": "Enfeite"
-  },
-  {
-    "id": "madeiras-fxwcgz",
-    "nome": "madeiras",
-    "preco": 10,
-    "descricao": "trabalha muito e come muita banana",
-    "imagem": "https://img.freepik.com/fotos-premium/retrato-de-mae-bonito-barbudo-de-meia-idade-homem-afro-vestido-com-uma-camisa-cor-de-carvao-e-gravata-preta-esta-olhando-para-o-espectador-com-um-olhar-pensativo-e-astuto_353119-242.jpg",
-    "categoria": "escravo"
   }
 ]
