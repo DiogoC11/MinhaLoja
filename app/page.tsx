@@ -95,6 +95,7 @@ export default function HomePage(){
           let curMinBound = minBound; // limites dinâmicos conforme filtros aplicados
           let curMaxBound = maxBound;
           let lastChanged = null;
+          let justChangedCategory = false;
 
           function filter(){
             // Pesquisa sem acentos
@@ -130,6 +131,12 @@ export default function HomePage(){
             let maxVal = parseFloat(maxI.value);
             if (!isFinite(minVal)) minVal = curMinBound; if (!isFinite(maxVal)) maxVal = curMaxBound;
             minVal = Math.round(minVal); maxVal = Math.round(maxVal);
+            // Se acabou de mudar a categoria, repor automaticamente o intervalo completo atual
+            if (justChangedCategory){
+              minVal = curMinBound;
+              maxVal = curMaxBound;
+              justChangedCategory = false;
+            }
             // Ajustar aos limites dinâmicos
             if (minVal < curMinBound) minVal = curMinBound;
             if (maxVal > curMaxBound) maxVal = curMaxBound;
@@ -172,6 +179,7 @@ export default function HomePage(){
             // Se selecionar "Todas", limpar a pesquisa para mostrar todos os produtos
             if ((cat.value||'') === '') { q.value = ''; }
             lastChanged = null;
+            justChangedCategory = true;
             filter();
           });
           minI?.addEventListener('input', function(){ lastChanged = 'min'; filter(); });
