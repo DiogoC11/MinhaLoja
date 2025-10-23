@@ -91,6 +91,8 @@ export default function HomePage(){
           function clampHandles(){
             let minVal = parseFloat(minR.value);
             let maxVal = parseFloat(maxR.value);
+            if (isNaN(minVal)) { minVal = minBound; minR.value = String(minVal); }
+            if (isNaN(maxVal)) { maxVal = maxBound; maxR.value = String(maxVal); }
             if (minVal > maxVal - step) { minVal = maxVal - step; minR.value = String(minVal); }
             if (maxVal < minVal + step) { maxVal = minVal + step; maxR.value = String(maxVal); }
             // Labels
@@ -126,13 +128,18 @@ export default function HomePage(){
           cat?.addEventListener('change', filter);
           minR?.addEventListener('input', filter);
           maxR?.addEventListener('input', filter);
+          minR?.addEventListener('change', filter);
+          maxR?.addEventListener('change', filter);
+          minR?.addEventListener('touchmove', filter, { passive: true });
+          maxR?.addEventListener('touchmove', filter, { passive: true });
           // Bring active thumb to front to improve dragging
           function front(e){ e.target.style.zIndex = '10'; }
           function back(e){ e.target.style.zIndex = '5'; }
           minR?.addEventListener('pointerdown', front); minR?.addEventListener('pointerup', back); minR?.addEventListener('pointerleave', back);
           maxR?.addEventListener('pointerdown', front); maxR?.addEventListener('pointerup', back); maxR?.addEventListener('pointerleave', back);
           // Inicialização
-          clampHandles();
+          // Initialize after paint to ensure correct dimensions
+          requestAnimationFrame(() => { clampHandles(); });
         })();
       `}} />
     </div>

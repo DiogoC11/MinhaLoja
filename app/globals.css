@@ -35,7 +35,7 @@ body { background: var(--bg); color: var(--fg); }
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
-  height: 0;
+  height: 16px; /* provide hit area so thumb centers better */
 }
 #rangeWrap input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -47,6 +47,7 @@ body { background: var(--bg); color: var(--fg); }
   border-radius: 9999px;
   cursor: pointer;
   position: relative;
+  margin-top: -6px; /* center thumb over 4px custom track */
 }
 #rangeWrap input[type=range]::-webkit-slider-runnable-track {
   height: 0;
