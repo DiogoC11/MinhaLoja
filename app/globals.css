@@ -19,7 +19,16 @@ body { background: var(--bg); color: var(--fg); }
 .card-body { @apply p-4; }
 .toolbar { @apply flex items-center justify-between my-4; }
 .muted { @apply text-slate-400; }
-.grid-products { @apply grid gap-4 items-stretch [grid-template-columns:repeat(auto-fill,minmax(220px,1fr))]; }
+.grid-products { @apply grid gap-4 items-stretch; grid-template-columns: repeat(1, minmax(0, 1fr)); }
+@media (min-width: 640px) { /* sm */
+  .grid-products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 768px) { /* md */
+  .grid-products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1280px) { /* xl */
+  .grid-products { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 
 /* Clamp text to two lines with ellipsis */
 .line-clamp-2 {
