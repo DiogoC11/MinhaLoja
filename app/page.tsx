@@ -125,11 +125,10 @@ export default function HomePage(){
             const items = Array.from(grid.children);
             items.forEach((item) => {
               const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
-              const desc = strip(item.querySelector('.text-slate-300')?.textContent||'').toLowerCase();
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
               const inRange = invalidRange ? true : (price >= minVal && price <= maxVal);
-              const match = (!qs || (name + ' ' + desc).includes(qs)) && (!cs || catVal === cs) && inRange;
+              const match = (!qs || name.includes(qs)) && (!cs || catVal === cs) && inRange;
               item.style.display = match ? '' : 'none';
             });
           }
