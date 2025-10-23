@@ -33,6 +33,12 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
     e.preventDefault(); if (!isAdmin) return;
     setBusy(true);
     try{
+      // Validações mínimas
+      if (!edit.nome || !String(edit.nome).trim()) { alert('O nome é obrigatório.'); return; }
+      if (!isFinite(Number(edit.preco)) || Number(edit.preco) < 0) { alert('O preço é inválido.'); return; }
+      if (!edit.categoria || !String(edit.categoria).trim()) { alert('A categoria é obrigatória.'); return; }
+      const baseImgs = (edit.imagens && edit.imagens.length ? [...edit.imagens] : (edit.imagem ? [edit.imagem] : [])) as string[];
+      if ((baseImgs.length + files.length) === 0){ alert('Adicione pelo menos uma imagem.'); return; }
       const payload: any = { ...edit };
       if (files.length){
         const uploaded: string[] = [];
@@ -162,45 +168,40 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
               const urls = list.map(f=>URL.createObjectURL(f));
               setPreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
             }} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
-            {previews.length > 0 ? (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {previews.map((src, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
-                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
-                      onClick={() => {
-                        setFiles(fs => fs.filter((_, idx) => idx !== i));
-                        setPreviews(prev => {
-                          const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
-                          return prev.filter((_, idx) => idx !== i);
-                        });
-                      }}>🗑</button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
-                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
-                      onClick={() => {
-                        setEdit(s => {
-                          const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
-                          imgs.splice(i, 1);
-                          return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
-                        });
-                      }}>🗑</button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
+                <div key={`exist-${i}`} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                    onClick={() => {
+                      setEdit(s => {
+                        const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
+                        imgs.splice(i, 1);
+                        return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
+                      });
+                    }}>🗑</button>
+                </div>
+              ))}
+              {previews.map((src, i) => (
+                <div key={`new-${i}`} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                    onClick={() => {
+                      setFiles(fs => fs.filter((_, idx) => idx !== i));
+                      setPreviews(prev => {
+                        const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
+                        return prev.filter((_, idx) => idx !== i);
+                      });
+                    }}>🗑</button>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Descrição</label>
-            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" />
+            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" required />
           </div>
         </form>
       </Modal>

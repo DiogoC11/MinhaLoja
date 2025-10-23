@@ -222,6 +222,12 @@ export default function AdminPage(){
           if (!editId) return;
           setBusy(true);
           try{
+            // Validações de campos obrigatórios
+            if (!edit.nome || !String(edit.nome).trim()) { setNotice({ text: 'O nome é obrigatório.', kind: 'error' }); setTimeout(()=>setNotice(null), 3000); return; }
+            if (!isFinite(Number(edit.preco)) || Number(edit.preco) < 0) { setNotice({ text: 'O preço é inválido.', kind: 'error' }); setTimeout(()=>setNotice(null), 3000); return; }
+            if (!edit.categoria || !String(edit.categoria).trim()) { setNotice({ text: 'A categoria é obrigatória.', kind: 'error' }); setTimeout(()=>setNotice(null), 3000); return; }
+            const baseImgs = (edit.imagens && edit.imagens.length ? [...edit.imagens] : (edit.imagem ? [edit.imagem] : [])) as string[];
+            if ((baseImgs.length + editFiles.length) === 0){ setNotice({ text: 'Adicione pelo menos uma imagem.', kind: 'error' }); setTimeout(()=>setNotice(null), 3000); return; }
             const payload = { ...edit } as any;
             if (editFiles.length){
               const uploaded: string[] = [];
@@ -279,45 +285,40 @@ export default function AdminPage(){
               const urls = files.map(f => URL.createObjectURL(f));
               setEditPreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
             }} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
-            {editPreviews.length > 0 ? (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {editPreviews.map((src, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
-                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
-                      onClick={() => {
-                        setEditFiles(fs => fs.filter((_, idx) => idx !== i));
-                        setEditPreviews(prev => {
-                          const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
-                          return prev.filter((_, idx) => idx !== i);
-                        });
-                      }}>🗑</button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 mt-2">
-                {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
-                  <div key={i} className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
-                    <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
-                      onClick={() => {
-                        setEdit(s => {
-                          const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
-                          imgs.splice(i, 1);
-                          return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
-                        });
-                      }}>🗑</button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
+                <div key={`exist-${i}`} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                    onClick={() => {
+                      setEdit(s => {
+                        const imgs = (s.imagens && s.imagens.length ? [...s.imagens] : [s.imagem].filter(Boolean)) as string[];
+                        imgs.splice(i, 1);
+                        return { ...s, imagens: imgs, imagem: (imgs[0] || '') };
+                      });
+                    }}>🗑</button>
+                </div>
+              ))}
+              {editPreviews.map((src, i) => (
+                <div key={`new-${i}`} className="relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                  <button type="button" aria-label="Remover" className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-600 text-white text-xs"
+                    onClick={() => {
+                      setEditFiles(fs => fs.filter((_, idx) => idx !== i));
+                      setEditPreviews(prev => {
+                        const url = prev[i]; try{ URL.revokeObjectURL(url); }catch{}
+                        return prev.filter((_, idx) => idx !== i);
+                      });
+                    }}>🗑</button>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Descrição</label>
-            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" />
+            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" required />
           </div>
         </form>
       </Modal>
