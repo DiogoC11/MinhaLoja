@@ -16,8 +16,8 @@ export default function ProductCard({ p, onDetails }: { p: Product; onDetails?: 
   return (
     <div className="card h-full flex flex-col">
       {/* next/image is recommended but remote domains need config; fallback to img for now */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={p.imagem} alt={p.nome} className="w-full h-40 object-cover bg-slate-800" />
+  {/* eslint-disable-next-line @next/next/no-img-element */}
+  <img src={p.imagem} alt={p.nome} className="w-full h-40 object-contain bg-slate-800" />
       <div className="card-body flex-1 flex flex-col gap-2">
   <h3 className="font-semibold line-clamp-1">{p.nome}</h3>
   <div className="text-slate-300 text-sm line-clamp-2">{p.descricao}</div>

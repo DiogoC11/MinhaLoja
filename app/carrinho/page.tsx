@@ -31,7 +31,7 @@ export default function CartPage(){
           return (
             <div key={it.id} className="cart-item grid grid-cols-[72px_1fr_auto] gap-3 items-center card p-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.imagem} alt={p.nome} className="w-[72px] h-[72px] object-cover rounded" />
+              <img src={p.imagem} alt={p.nome} className="w-[72px] h-[72px] object-contain rounded bg-slate-800" />
               <div>
                 <div className="flex items-center justify-between">
                   <strong>{p.nome}</strong>

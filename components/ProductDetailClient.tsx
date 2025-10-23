@@ -44,7 +44,7 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
         <h2 className="text-xl font-semibold mb-2">{cur.nome}</h2>
         <div className="card overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={cur.imagem} alt={cur.nome} className="w-full max-h-[400px] object-cover" />
+          <img src={cur.imagem} alt={cur.nome} className="w-full max-h-[400px] object-contain bg-slate-800" />
           <div className="card-body">
             <div className="text-slate-300 mb-2">{cur.descricao}</div>
             <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>
