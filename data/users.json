@@ -16,7 +16,8 @@
     "passHash": "6XaqDBibweXXVnJ+uQKwdUiZKKq6DKqf5aNlMZjla44SkNxb/xMgFrEiSaWdu0U3k3gHdZObZ0SRiZNawAQc4w==",
     "salt": "bB1OkI4lMJagTUQcCm7ybA==",
     "createdAt": 1761138934191,
-    "isAdmin": false
+    "isAdmin": false,
+    "isVerified": true
   },
   {
     "id": "u-torres-gmail-com-5bmchb",

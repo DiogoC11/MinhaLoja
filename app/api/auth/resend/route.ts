@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { readUsers, writeUsers } from '@/lib/auth';
 import crypto from 'crypto';
-import { queueEmail } from '@/lib/mail';
+import { sendMail } from '@/lib/mail';
 
 export async function POST(request: Request){
   const { email: rawEmail } = await request.json().catch(()=>({ email: '' }));
@@ -20,6 +20,6 @@ export async function POST(request: Request){
   const link = `${origin}/api/auth/verify?token=${verifyToken}`;
   const subject = 'Verifique o seu e-mail (novo link)';
   const body = `Olá,\n\nSegue um novo link de verificação: ${link}\n\nEste link expira em 48 horas.`;
-  await queueEmail(email, subject, body);
+  await sendMail(email, subject, body);
   return NextResponse.json({ ok: true, verifyLink: link });
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { genSalt, hashPassword, readUsers, writeUsers, genUserId } from '@/lib/auth';
 import crypto from 'crypto';
-import { queueEmail } from '@/lib/mail';
+import { sendMail } from '@/lib/mail';
 
 export async function POST(request: Request){
   const bodyReq = await request.json();
@@ -26,6 +26,6 @@ export async function POST(request: Request){
   const link = `${origin}/api/auth/verify?token=${verifyToken}`;
   const subject = 'Verifique o seu e-mail';
   const emailBody = `Olá ${name},\n\nClique para verificar: ${link}\n\nEste link expira em 48 horas.`;
-  await queueEmail(email, subject, emailBody);
+  await sendMail(email, subject, emailBody);
   return NextResponse.json({ id: user.id, name: user.name, email: user.email, verifyLink: link, message: 'Registo criado. Verifique o seu e-mail para ativar a conta.' }, { status: 201 });
 }
