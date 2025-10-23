@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
@@ -14,12 +14,23 @@ export default function AdminPage(){
   const [busy, setBusy] = useState(false);
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [notice, setNotice] = useState<{ text: string; kind: 'success' | 'error' } | null>(null);
+  // Previews para criação
+  const [createFiles, setCreateFiles] = useState<File[]>([]);
+  const [createPreviews, setCreatePreviews] = useState<string[]>([]);
+  useEffect(() => {
+    // libertar URLs antigas
+    return () => { createPreviews.forEach(url => URL.revokeObjectURL(url)); };
+  }, [createPreviews]);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [edit, setEdit] = useState<{ nome: string; preco: number; categoria: string; imagem: string; descricao: string }>({ nome: '', preco: 0, categoria: '', imagem: '', descricao: '' });
-  const [editFile, setEditFile] = useState<File | null>(null);
+  const [edit, setEdit] = useState<{ nome: string; preco: number; categoria: string; imagem: string; imagens?: string[]; descricao: string }>({ nome: '', preco: 0, categoria: '', imagem: '', imagens: [], descricao: '' });
+  const [editFiles, setEditFiles] = useState<File[]>([]);
+  const [editPreviews, setEditPreviews] = useState<string[]>([]);
+  useEffect(() => {
+    return () => { editPreviews.forEach(url => URL.revokeObjectURL(url)); };
+  }, [editPreviews]);
 
   // Proteger página: requer sessão
   useState(() => {
@@ -42,6 +53,7 @@ export default function AdminPage(){
       preco: Number(fd.get('preco')||0),
       categoria: String(fd.get('categoria')||'Outros').trim() || 'Outros',
       imagem: '',
+      imagens: [] as string[],
       descricao: String(fd.get('descricao')||'').trim(),
     };
     if (!body.nome || !isFinite(body.preco) || body.preco < 0){
@@ -51,18 +63,22 @@ export default function AdminPage(){
     }
     setBusy(true);
     try{
-      // upload image first
-      const file = fd.get('imagemFile') as File | null;
-      if (!file || !file.size) throw new Error('Selecione uma imagem');
-      const up = new FormData(); up.append('file', file);
-      const ur = await fetch('/api/upload', { method: 'POST', body: up });
-      if (!ur.ok) throw new Error('Falha no upload da imagem');
-      const uj = await ur.json();
-      body.imagem = uj.path;
+      // Upload de várias imagens (requer pelo menos uma)
+      if (!createFiles.length) throw new Error('Selecione pelo menos uma imagem');
+      const uploaded: string[] = [];
+      for (const file of createFiles){
+        const up = new FormData(); up.append('file', file);
+        const ur = await fetch('/api/upload', { method: 'POST', body: up });
+        if (!ur.ok) throw new Error('Falha no upload da imagem');
+        const uj = await ur.json(); uploaded.push(uj.path);
+      }
+      body.imagens = uploaded;
+      body.imagem = uploaded[0] || '';
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
         if (!res.ok) throw new Error('Falha ao guardar');
       await mutate('/api/products');
       e.currentTarget.reset();
+      setCreateFiles([]); setCreatePreviews([]);
       setNotice({ text: 'Produto adicionado com sucesso!', kind: 'success' });
       setTimeout(()=>setNotice(null), 3000);
     }catch(err: any){
@@ -122,8 +138,23 @@ export default function AdminPage(){
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Imagem (ficheiro)</label>
-            <input name="imagemFile" type="file" accept="image/*" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            <label className="text-slate-400">Imagens (ficheiros)</label>
+            <input name="imagensFiles" type="file" accept="image/*" multiple required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2"
+              onChange={(e)=>{
+                const files = Array.from(e.currentTarget.files||[]) as File[];
+                setCreateFiles(files);
+                // previews
+                const urls = files.map(f => URL.createObjectURL(f));
+                setCreatePreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
+              }} />
+            {createPreviews.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {createPreviews.map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-col gap-1 mt-3">
@@ -157,7 +188,7 @@ export default function AdminPage(){
                 <td className="px-3 py-2">{p.categoria}</td>
                 <td className="px-3 py-2">{formatPriceEUR(p.preco)}</td>
                 <td className="px-3 py-2">
-                  <button className="btn" onClick={() => { setEditId(p.id); setEdit({ nome: p.nome, preco: p.preco, categoria: p.categoria, imagem: p.imagem, descricao: p.descricao }); setEditOpen(true); }} disabled={busy}>Editar</button>
+                  <button className="btn" onClick={() => { setEditId(p.id); setEdit({ nome: p.nome, preco: p.preco, categoria: p.categoria, imagem: p.imagem, imagens: p.imagens||[], descricao: p.descricao }); setEditFiles([]); setEditPreviews([]); setEditOpen(true); }} disabled={busy}>Editar</button>
                 </td>
               </tr>
             ))}
@@ -182,12 +213,16 @@ export default function AdminPage(){
           setBusy(true);
           try{
             const payload = { ...edit } as any;
-            if (editFile && editFile.size){
-              const up = new FormData(); up.append('file', editFile);
-              const ur = await fetch('/api/upload', { method: 'POST', body: up });
-              if (!ur.ok) throw new Error('Falha no upload da imagem');
-              const uj = await ur.json();
-              payload.imagem = uj.path;
+            if (editFiles.length){
+              const uploaded: string[] = [];
+              for (const f of editFiles){
+                const up = new FormData(); up.append('file', f);
+                const ur = await fetch('/api/upload', { method: 'POST', body: up });
+                if (!ur.ok) throw new Error('Falha no upload da imagem');
+                const uj = await ur.json(); uploaded.push(uj.path);
+              }
+              payload.imagens = uploaded;
+              payload.imagem = uploaded[0] || payload.imagem;
             }
             const res = await fetch(`/api/products/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!res.ok) throw new Error('Falha ao atualizar produto');
@@ -219,9 +254,28 @@ export default function AdminPage(){
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Imagem</label>
-            <input type="file" accept="image/*" onChange={e=>setEditFile(e.currentTarget.files?.[0] || null)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
-            {edit.imagem && <small className="muted">Imagem atual: {edit.imagem}</small>}
+            <label className="text-slate-400">Imagens</label>
+            <input type="file" multiple accept="image/*" onChange={(e)=>{
+              const files = Array.from(e.currentTarget.files||[]) as File[];
+              setEditFiles(files);
+              const urls = files.map(f => URL.createObjectURL(f));
+              setEditPreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
+            }} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            {editPreviews.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {editPreviews.map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Descrição</label>

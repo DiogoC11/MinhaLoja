@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Modal from '@/components/Modal';
 import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
@@ -17,7 +17,11 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
   const [busyDelete, setBusyDelete] = useState(false);
   const [cur, setCur] = useState<Product>({ ...product });
   const [edit, setEdit] = useState({ ...product });
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
+  useEffect(()=>{
+    return () => { previews.forEach(u=>URL.revokeObjectURL(u)); };
+  }, [previews]);
   const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
   const cats = catsData || [];
   const imgs = useMemo(() => (cur.imagens && cur.imagens.length ? cur.imagens : [cur.imagem]).slice(0, 10), [cur]);
@@ -30,12 +34,16 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
     setBusy(true);
     try{
       const payload: any = { ...edit };
-      if (file && file.size){
-        const up = new FormData(); up.append('file', file);
-        const ur = await fetch('/api/upload', { method: 'POST', body: up });
-        if (!ur.ok) throw new Error('Falha no upload da imagem');
-        const uj = await ur.json();
-        payload.imagem = uj.path;
+      if (files.length){
+        const uploaded: string[] = [];
+        for (const f of files){
+          const up = new FormData(); up.append('file', f);
+          const ur = await fetch('/api/upload', { method: 'POST', body: up });
+          if (!ur.ok) throw new Error('Falha no upload da imagem');
+          const uj = await ur.json(); uploaded.push(uj.path);
+        }
+        payload.imagens = uploaded;
+        payload.imagem = uploaded[0] || payload.imagem;
       }
       const res = await fetch(`/api/products/${product.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Falha ao actualizar produto');
@@ -108,7 +116,7 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
               <a className="btn btn-ghost" href="/produtos">Voltar</a>
               {isAdmin && (
                 <>
-                  <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>
+                  <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFiles([]); setPreviews([]); setOpen(true); }}>Editar</button>
                   <button className="btn bg-red-600 hover:bg-red-700" onClick={()=> setOpenDelete(true)}>Eliminar</button>
                 </>
               )}
@@ -141,9 +149,28 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             </div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-slate-400">Imagem</label>
-            <input type="file" accept="image/*" onChange={e=>setFile(e.currentTarget.files?.[0] || null)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
-            {edit.imagem && <small className="muted">Imagem atual: {edit.imagem}</small>}
+            <label className="text-slate-400">Imagens</label>
+            <input type="file" accept="image/*" multiple onChange={e=>{
+              const list = Array.from(e.currentTarget.files||[]) as File[];
+              setFiles(list);
+              const urls = list.map(f=>URL.createObjectURL(f));
+              setPreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
+            }} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            {previews.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {previews.map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={src} alt={`preview ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={i} src={src!} alt={`atual ${i+1}`} className="w-16 h-16 object-contain rounded bg-slate-800" />
+                ))}
+              </div>
+            )}
           </div>
           <div className="flex flex-col gap-1">
             <label className="text-slate-400">Descrição</label>
