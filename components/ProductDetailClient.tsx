@@ -52,7 +52,6 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>
             <div className="flex gap-2">
               <button className="btn" onClick={() => add(cur.id)}>Adicionar ao carrinho</button>
-              <a className="btn btn-ghost" href="/carrinho">Ir ao carrinho</a>
               <a className="btn btn-ghost" href="/produtos">Voltar</a>
               {isAdmin && <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>}
             </div>
