@@ -5,10 +5,12 @@ import type { Product } from '@/components/ProductCard';
 import type { Category } from '@/lib/categories';
 import useSWR, { mutate } from 'swr';
 import { formatPriceEUR } from '@/lib/format';
+import { useCart } from '@/components/CartContext';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function ProductDetailClient({ product, isAdmin }: { product: Product; isAdmin: boolean }){
+  const { add } = useCart();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [cur, setCur] = useState<Product>({ ...product });
@@ -49,7 +51,8 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             <div className="text-slate-300 mb-2">{cur.descricao}</div>
             <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>
             <div className="flex gap-2">
-              <a className="btn" href="/carrinho">Ir ao carrinho</a>
+              <button className="btn" onClick={() => add(cur.id)}>Adicionar ao carrinho</button>
+              <a className="btn btn-ghost" href="/carrinho">Ir ao carrinho</a>
               <a className="btn btn-ghost" href="/produtos">Voltar</a>
               {isAdmin && <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>}
             </div>
