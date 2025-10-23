@@ -231,8 +231,13 @@ export default function AdminPage(){
                 if (!ur.ok) throw new Error('Falha no upload da imagem');
                 const uj = await ur.json(); uploaded.push(uj.path);
               }
-              payload.imagens = uploaded;
-              payload.imagem = uploaded[0] || payload.imagem;
+              const base = Array.isArray(edit.imagens) && edit.imagens.length
+                ? [...edit.imagens]
+                : (edit.imagem ? [edit.imagem] : []);
+              const merged = Array.from(new Set([...(base as string[]), ...uploaded]));
+              payload.imagens = merged;
+              // manter a principal atual se existir, senão primeira da lista
+              payload.imagem = (base[0] || merged[0] || payload.imagem || '');
             } else if (Array.isArray(payload.imagens)) {
               // Garantir que a principal acompanha a 1ª imagem
               payload.imagem = payload.imagens[0] || '';
