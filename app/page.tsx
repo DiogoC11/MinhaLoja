@@ -54,20 +54,19 @@ export default function HomePage(){
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-slate-400">Preço</label>
-              <div className="text-sm flex items-center justify-between">
-                <span id="minLabel">{new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(minPrice)}</span>
-                <span id="maxLabel">{new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(maxPrice)}</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <small className="muted">Mínimo</small>
+                  <input id="minPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={minPrice}
+                    placeholder={String(minPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <small className="muted">Máximo</small>
+                  <input id="maxPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={maxPrice}
+                    placeholder={String(maxPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                </div>
               </div>
-              <div className="relative h-8 flex items-center select-none" id="rangeWrap">
-                {/* Trilho de fundo */}
-                <div id="rangeTrack" className="absolute left-0 right-0 h-1 bg-slate-700 rounded" />
-                {/* Dois sliders sobrepostos */}
-                <input id="minR" type="range" min={minPrice} max={maxPrice} step="0.01" defaultValue={minPrice}
-                  className="absolute w-full appearance-none bg-transparent pointer-events-auto" />
-                <input id="maxR" type="range" min={minPrice} max={maxPrice} step="0.01" defaultValue={maxPrice}
-                  className="absolute w-full appearance-none bg-transparent pointer-events-auto" />
-              </div>
-              <small className="muted">Arraste as bolinhas para definir o intervalo.</small>
+              <small className="muted">A lista actualiza conforme altera os valores.</small>
             </div>
           </div>
         </aside>
@@ -79,38 +78,19 @@ export default function HomePage(){
           const q = document.getElementById('q');
           const cat = document.getElementById('cat');
           const grid = document.getElementById('grid');
-          const minR = document.getElementById('minR');
-          const maxR = document.getElementById('maxR');
-          const rangeTrack = document.getElementById('rangeTrack');
-          const minLabel = document.getElementById('minLabel');
-          const maxLabel = document.getElementById('maxLabel');
-          const minBound = parseFloat(minR.min||'0');
-          const maxBound = parseFloat(maxR.max||'0');
-          const step = parseFloat(minR.step||'0.01') || 0.01;
-
-          function clampHandles(){
-            let minVal = parseFloat(minR.value);
-            let maxVal = parseFloat(maxR.value);
-            if (isNaN(minVal)) { minVal = minBound; minR.value = String(minVal); }
-            if (isNaN(maxVal)) { maxVal = maxBound; maxR.value = String(maxVal); }
-            if (minVal > maxVal - step) { minVal = maxVal - step; minR.value = String(minVal); }
-            if (maxVal < minVal + step) { maxVal = minVal + step; maxR.value = String(maxVal); }
-            // Labels
-            minLabel.textContent = fmt.format(minVal);
-            maxLabel.textContent = fmt.format(maxVal);
-            // Track highlight
-            const pct = (v) => ((v - minBound) / (maxBound - minBound)) * 100;
-            const l = pct(minVal); const r = pct(maxVal);
-            rangeTrack.style.background = 'linear-gradient(90deg, ' +
-              '#334155 ' + l + '%, #60a5fa ' + l + '%, #60a5fa ' + r + '%, #334155 ' + r + '%)';
-          }
+          const minI = document.getElementById('minPriceI');
+          const maxI = document.getElementById('maxPriceI');
+          const minBound = parseFloat(minI.min||'0');
+          const maxBound = parseFloat(maxI.max||'0');
 
           function filter(){
-            clampHandles();
             const qs = (q.value||'').toLowerCase();
             const cs = (cat.value||'').toLowerCase();
-            const minVal = parseFloat(minR.value);
-            const maxVal = parseFloat(maxR.value);
+            let minVal = parseFloat(minI.value);
+            let maxVal = parseFloat(maxI.value);
+            if (!isFinite(minVal)) minVal = minBound;
+            if (!isFinite(maxVal)) maxVal = maxBound;
+            if (minVal > maxVal) { const t = minVal; minVal = maxVal; maxVal = t; }
             const items = Array.from(grid.children);
             items.forEach((item) => {
               const name = item.querySelector('h3')?.textContent?.toLowerCase()||'';
@@ -126,20 +106,12 @@ export default function HomePage(){
           // Eventos
           q?.addEventListener('input', filter);
           cat?.addEventListener('change', filter);
-          minR?.addEventListener('input', filter);
-          maxR?.addEventListener('input', filter);
-          minR?.addEventListener('change', filter);
-          maxR?.addEventListener('change', filter);
-          minR?.addEventListener('touchmove', filter, { passive: true });
-          maxR?.addEventListener('touchmove', filter, { passive: true });
-          // Bring active thumb to front to improve dragging
-          function front(e){ e.target.style.zIndex = '10'; }
-          function back(e){ e.target.style.zIndex = '5'; }
-          minR?.addEventListener('pointerdown', front); minR?.addEventListener('pointerup', back); minR?.addEventListener('pointerleave', back);
-          maxR?.addEventListener('pointerdown', front); maxR?.addEventListener('pointerup', back); maxR?.addEventListener('pointerleave', back);
+          minI?.addEventListener('input', filter);
+          maxI?.addEventListener('input', filter);
+          minI?.addEventListener('change', filter);
+          maxI?.addEventListener('change', filter);
           // Inicialização
-          // Initialize after paint to ensure correct dimensions
-          requestAnimationFrame(() => { clampHandles(); });
+          requestAnimationFrame(filter);
         })();
       `}} />
     </div>
