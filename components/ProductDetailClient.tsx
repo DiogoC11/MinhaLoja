@@ -13,6 +13,8 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
   const { add } = useCart();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [busyDelete, setBusyDelete] = useState(false);
   const [cur, setCur] = useState<Product>({ ...product });
   const [edit, setEdit] = useState({ ...product });
   const [file, setFile] = useState<File | null>(null);
@@ -40,6 +42,21 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
     }finally{ setBusy(false); }
   }
 
+  async function confirmDelete(){
+    if (!isAdmin) return;
+    setBusyDelete(true);
+    try{
+      const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Falha ao eliminar produto');
+      await mutate('/api/products');
+      // Voltar à lista de produtos após apagar
+      location.href = '/produtos';
+    } finally {
+      setBusyDelete(false);
+      setOpenDelete(false);
+    }
+  }
+
   return (
     <div>
       <section className="hero">
@@ -53,7 +70,12 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             <div className="flex gap-2">
               <button className="btn" onClick={() => add(cur.id)}>Adicionar ao carrinho</button>
               <a className="btn btn-ghost" href="/produtos">Voltar</a>
-              {isAdmin && <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>}
+              {isAdmin && (
+                <>
+                  <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFile(null); setOpen(true); }}>Editar</button>
+                  <button className="btn bg-red-600 hover:bg-red-700" onClick={()=> setOpenDelete(true)}>Eliminar</button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -92,6 +114,15 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" />
           </div>
         </form>
+      </Modal>
+
+      {/* Modal de confirmação de eliminação */}
+      <Modal open={openDelete} title="Eliminar produto" onClose={()=>!busyDelete && setOpenDelete(false)}
+        footer={<>
+          <button className="btn btn-ghost" onClick={()=>setOpenDelete(false)} disabled={busyDelete}>Cancelar</button>
+          <button className="btn bg-red-600 hover:bg-red-700" onClick={confirmDelete} disabled={busyDelete}>Eliminar</button>
+        </>}>
+        <p>Tem a certeza que quer eliminar o produto <span className="font-semibold">{cur.nome}</span>? Esta ação é irreversível.</p>
       </Modal>
     </div>
   );
