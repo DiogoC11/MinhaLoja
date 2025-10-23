@@ -6,7 +6,8 @@
     "passHash": "JXnwyF/WsiI2i75UJMVUWWHxZ3h9ICsZymjQhrqNmqsTVLT/ZnE1iRKnwm3UBSMA6o3pYKxjc6P/0vbRoyiIKg==",
     "salt": "hUUk8npwQy9rf5WHioNxrQ==",
     "createdAt": 1761172746476,
-    "isAdmin": true
+    "isAdmin": true,
+    "isVerified": true
   },
   {
     "id": "u-diogo-gmail-com-9iwfib",
