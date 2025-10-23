@@ -24,5 +24,17 @@
     "passHash": "Mh8RNZzPjymdQQu19HeP9hLq5t0LreeT2Z0EdcJQcOlDVGwsocZvDGaFg6tFnF4dVMFL5pTlhJ/yvtbbRRbhWA==",
     "salt": "6o8WmLHnS63Ymv7UV7qjFA==",
     "createdAt": 1761140002545
+  },
+  {
+    "id": "u-diogo-a-cardoso-2005-gmail-com-2i8oma",
+    "name": "DiogoCardoso",
+    "email": "diogo.a.cardoso.2005@gmail.com",
+    "passHash": "PJ1P/DCjprFx//GTnIQNNLlJx7SHeTCaJ9EeNFac7yjhqCBDLSa/dauycVBX3HPD0j+RpbTT48JrKcqapDrTLg==",
+    "salt": "/lOVU1H0/gbOXNHaP6WrzQ==",
+    "createdAt": 1761261518403,
+    "isAdmin": false,
+    "isVerified": false,
+    "verifyToken": "OyGppRPlMTG7HlSYB56gXsKn95HuZRol",
+    "verifyTokenExpires": 1761434318402
   }
 ]

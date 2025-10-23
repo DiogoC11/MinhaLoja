@@ -1,0 +1,9 @@
+[
+  {
+    "id": "mh41mt6w4aqgbeeeirs",
+    "to": "diogo.a.cardoso.2005@gmail.com",
+    "subject": "Verifique o seu e-mail",
+    "body": "Olá DiogoCardoso,\n\nClique para verificar: http://localhost:3000/api/auth/verify?token=OyGppRPlMTG7HlSYB56gXsKn95HuZRol\n\nEste link expira em 48 horas.",
+    "createdAt": 1761261518409
+  }
+]

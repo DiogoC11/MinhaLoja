@@ -70,7 +70,13 @@ export default function LoginPage(){
     const payload = await res.json();
     if (!res.ok) throw new Error(payload.error || 'Falha ao criar conta');
     // Não autenticar automaticamente; instruir o utilizador a verificar o e-mail
-    alert('Registo criado. Enviámos um e-mail de verificação. Por favor, verifique a sua caixa de correio para ativar a conta.');
+    // Em desenvolvimento, abrimos também o link devolvido pela API para conveniência.
+    if (payload.verifyLink) {
+      try { window.open(payload.verifyLink, '_blank'); } catch {}
+      alert('Registo criado. Enviámos um e-mail de verificação. Também abrimos o link de verificação numa nova aba (ambiente de desenvolvimento).');
+    } else {
+      alert('Registo criado. Enviámos um e-mail de verificação. Por favor, verifique a sua caixa de correio para ativar a conta.');
+    }
     setTab('login');
   }
 
