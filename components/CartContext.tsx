@@ -31,7 +31,20 @@ export function CartProvider({ children }: { children: React.ReactNode }){
 
   const api = useMemo(() => ({
     cart,
-    add: (id: string) => setCart((c: CartState) => ({ ...c, [id]: { id, qty: (c[id]?.qty || 0) + 1 } })),
+    add: (id: string) => {
+      // Check authentication before adding to cart
+      try{
+        fetch('/api/auth/me', { cache: 'no-store' })
+          .then(r => r.json())
+          .then(({ user }) => {
+            if (!user) { location.href = '/login'; return; }
+            setCart((c: CartState) => ({ ...c, [id]: { id, qty: (c[id]?.qty || 0) + 1 } }));
+          })
+          .catch(() => { location.href = '/login'; });
+      }catch{
+        location.href = '/login';
+      }
+    },
     dec: (id: string) => setCart((c: CartState) => {
       const qty = (c[id]?.qty || 0) - 1;
       const n: CartState = { ...c };

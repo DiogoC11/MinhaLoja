@@ -35,7 +35,6 @@ export default function ContactsClient({ contacts, isAdmin }: { contacts: Contac
           <div><span className="muted">Instagram:</span> {cur.instagram ? <a className="text-blue-400 underline" href={cur.instagram} target="_blank" rel="noreferrer">{cur.instagram}</a> : <span className="muted">—</span>}</div>
           <div><span className="muted">Facebook:</span> {cur.facebook ? <a className="text-blue-400 underline" href={cur.facebook} target="_blank" rel="noreferrer">{cur.facebook}</a> : <span className="muted">—</span>}</div>
           <div><span className="muted">Telefone:</span> {cur.telefone || <span className="muted">—</span>}</div>
-          {cur.updatedAt ? <small className="muted">Atualizado em {new Date(cur.updatedAt).toLocaleString('pt-PT')}</small> : null}
         </div>
         <div className="mt-3 flex items-center gap-2">
           <a className="btn btn-ghost" href="/">Voltar</a>

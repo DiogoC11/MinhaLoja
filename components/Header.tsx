@@ -39,7 +39,7 @@ export default function Header(){
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-700/70 bg-slate-900/60 backdrop-blur">
-      <div className="container flex items-center justify-between py-3">
+      <div className="mx-auto w-[80%] flex items-center justify-between py-3">
         <Link href="/" className="flex items-center gap-2 font-bold">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.svg" alt="Logo Minha Loja" className="w-7 h-7" />
