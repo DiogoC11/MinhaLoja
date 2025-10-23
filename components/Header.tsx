@@ -45,7 +45,7 @@ export default function Header(){
           <img src="/logo.svg" alt="Logo Minha Loja" className="w-7 h-7" />
           <span>Minha Loja</span>
         </Link>
-        <nav className="flex items-center gap-4">
+  <nav className="flex items-center gap-6">
           <Link href="/produtos">Produtos</Link>
           <Link href="/carrinho" className="cart-link">Carrinho <span className="badge">{count}</span></Link>
           <Link href="/contactos">Contactos</Link>
