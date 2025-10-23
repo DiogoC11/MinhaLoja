@@ -101,6 +101,7 @@ export default function HomePage(){
             const strip = (s) => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const qs = strip(q.value||'').toLowerCase();
             const cs = (cat.value||'').toLowerCase();
+            const applySearch = !!qs && !!cs; // apenas aplica pesquisa se uma categoria específica estiver selecionada
             const items = Array.from(grid.children);
 
             // Calcular limites dinâmicos (min/max) apenas com base nos itens que passam por nome+categoria
@@ -109,7 +110,7 @@ export default function HomePage(){
               const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
-              const baseMatch = (!qs || name.includes(qs)) && (!cs || catVal === cs);
+              const baseMatch = (cs ? catVal === cs : true) && (applySearch ? name.includes(qs) : true);
               if (baseMatch) pricesForBounds.push(price);
             });
             if (pricesForBounds.length > 0){
@@ -158,7 +159,7 @@ export default function HomePage(){
               const name = strip(item.querySelector('h3')?.textContent||'').toLowerCase();
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
-              const baseMatch = (!qs || name.includes(qs)) && (!cs || catVal === cs);
+              const baseMatch = (cs ? catVal === cs : true) && (applySearch ? name.includes(qs) : true);
               const inRange = invalidRange ? true : (price >= minVal && price <= maxVal);
               const match = baseMatch && inRange;
               item.style.display = match ? '' : 'none';
@@ -167,7 +168,12 @@ export default function HomePage(){
 
           // Eventos
           q?.addEventListener('input', filter);
-          cat?.addEventListener('change', filter);
+          cat?.addEventListener('change', function(){
+            // Se selecionar "Todas", limpar a pesquisa para mostrar todos os produtos
+            if ((cat.value||'') === '') { q.value = ''; }
+            lastChanged = null;
+            filter();
+          });
           minI?.addEventListener('input', function(){ lastChanged = 'min'; filter(); });
           maxI?.addEventListener('input', function(){ lastChanged = 'max'; filter(); });
           minI?.addEventListener('change', function(){ lastChanged = 'min'; filter(); });
