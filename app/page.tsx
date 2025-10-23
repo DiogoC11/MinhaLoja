@@ -9,6 +9,9 @@ export default function HomePage(){
   const { data } = useSWR<Product[]>('/api/products', fetcher);
   const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
   const list = data || [];
+  const prices = list.map((p: Product) => p.preco);
+  const minPrice = prices.length ? Math.min(...prices) : 0;
+  const maxPrice = prices.length ? Math.max(...prices) : 0;
   const catsFromApi = (catsData || []) as unknown as Category[];
   const cats = (catsFromApi && catsFromApi.length > 0)
     ? catsFromApi.map(c => c.nome)
@@ -32,11 +35,19 @@ export default function HomePage(){
             <option value="">Todas as categorias</option>
             {cats.map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
           </select>
+          <div className="flex items-center gap-2">
+            <label htmlFor="min" className="muted">Preço mín.</label>
+            <input id="min" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={minPrice}
+              className="w-24 border border-slate-600 rounded-md bg-slate-900 px-2 py-2" />
+            <label htmlFor="max" className="muted">máx.</label>
+            <input id="max" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={maxPrice}
+              className="w-24 border border-slate-600 rounded-md bg-slate-900 px-2 py-2" />
+          </div>
         </div>
       </div>
       <div className="grid-products" id="grid">
   {list.map((p: Product) => (
-          <div key={p.id} data-cat={(p.categoria||'').toLowerCase()} className="h-full">
+          <div key={p.id} data-cat={(p.categoria||'').toLowerCase()} data-price={p.preco} className="h-full">
             <ProductCard p={p} onDetails={(id)=>location.href=`/produto/${id}`} />
           </div>
         ))}
@@ -45,21 +56,29 @@ export default function HomePage(){
         (function(){
           const q = document.getElementById('q');
           const cat = document.getElementById('cat');
+          const min = document.getElementById('min');
+          const max = document.getElementById('max');
           const grid = document.getElementById('grid');
           function filter(){
             const qs = (q.value||'').toLowerCase();
             const cs = (cat.value||'').toLowerCase();
+            const minVal = parseFloat(min.value);
+            const maxVal = parseFloat(max.value);
             const items = Array.from(grid.children);
             items.forEach((item) => {
               const name = item.querySelector('h3')?.textContent?.toLowerCase()||'';
               const desc = item.querySelector('.text-slate-300')?.textContent?.toLowerCase()||'';
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
-              const match = (!qs || (name + ' ' + desc).includes(qs)) && (!cs || catVal === cs);
+              const price = parseFloat(item.getAttribute('data-price')||'0');
+              const inRange = (isNaN(minVal) || price >= minVal) && (isNaN(maxVal) || price <= maxVal);
+              const match = (!qs || (name + ' ' + desc).includes(qs)) && (!cs || catVal === cs) && inRange;
               item.style.display = match ? '' : 'none';
             });
           }
           q?.addEventListener('input', filter);
           cat?.addEventListener('change', filter);
+          min?.addEventListener('input', filter);
+          max?.addEventListener('input', filter);
         })();
       `}} />
     </div>

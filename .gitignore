@@ -18,4 +18,6 @@ pnpm-debug.log*
 
 data/users.json
 public/uploads/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
 
