@@ -59,11 +59,13 @@ export default function HomePage(){
                   <small className="muted">Mínimo</small>
                   <input id="minPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={minPrice}
                     placeholder={String(minPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                  <small id="minPriceErr" className="text-red-400 text-xs hidden">O mínimo não pode ser superior ao máximo.</small>
                 </div>
                 <div className="flex flex-col gap-1">
                   <small className="muted">Máximo</small>
                   <input id="maxPriceI" type="number" step="0.01" min={minPrice} max={maxPrice} defaultValue={maxPrice}
                     placeholder={String(maxPrice)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+                  <small id="maxPriceErr" className="text-red-400 text-xs hidden">O máximo não pode ser inferior ao mínimo.</small>
                 </div>
               </div>
               <small className="muted">A lista actualiza conforme altera os valores.</small>
@@ -80,8 +82,11 @@ export default function HomePage(){
           const grid = document.getElementById('grid');
           const minI = document.getElementById('minPriceI');
           const maxI = document.getElementById('maxPriceI');
+          const minErr = document.getElementById('minPriceErr');
+          const maxErr = document.getElementById('maxPriceErr');
           const minBound = parseFloat(minI.min||'0');
           const maxBound = parseFloat(maxI.max||'0');
+          let lastChanged = null;
 
           function filter(){
             const qs = (q.value||'').toLowerCase();
@@ -90,14 +95,32 @@ export default function HomePage(){
             let maxVal = parseFloat(maxI.value);
             if (!isFinite(minVal)) minVal = minBound;
             if (!isFinite(maxVal)) maxVal = maxBound;
-            if (minVal > maxVal) { const t = minVal; minVal = maxVal; maxVal = t; }
+            const invalidRange = minVal > maxVal;
+
+            // Show/hide inline error messages when the range is invalid
+            if (invalidRange) {
+              if (lastChanged === 'min') {
+                minErr?.classList.remove('hidden');
+                maxErr?.classList.add('hidden');
+              } else if (lastChanged === 'max') {
+                maxErr?.classList.remove('hidden');
+                minErr?.classList.add('hidden');
+              } else {
+                // Default: show both if we can't detect which changed
+                minErr?.classList.remove('hidden');
+                maxErr?.classList.remove('hidden');
+              }
+            } else {
+              minErr?.classList.add('hidden');
+              maxErr?.classList.add('hidden');
+            }
             const items = Array.from(grid.children);
             items.forEach((item) => {
               const name = item.querySelector('h3')?.textContent?.toLowerCase()||'';
               const desc = item.querySelector('.text-slate-300')?.textContent?.toLowerCase()||'';
               const catVal = (item.getAttribute('data-cat')||'').toLowerCase();
               const price = parseFloat(item.getAttribute('data-price')||'0');
-              const inRange = price >= minVal && price <= maxVal;
+              const inRange = invalidRange ? true : (price >= minVal && price <= maxVal);
               const match = (!qs || (name + ' ' + desc).includes(qs)) && (!cs || catVal === cs) && inRange;
               item.style.display = match ? '' : 'none';
             });
@@ -106,10 +129,10 @@ export default function HomePage(){
           // Eventos
           q?.addEventListener('input', filter);
           cat?.addEventListener('change', filter);
-          minI?.addEventListener('input', filter);
-          maxI?.addEventListener('input', filter);
-          minI?.addEventListener('change', filter);
-          maxI?.addEventListener('change', filter);
+          minI?.addEventListener('input', function(){ lastChanged = 'min'; filter(); });
+          maxI?.addEventListener('input', function(){ lastChanged = 'max'; filter(); });
+          minI?.addEventListener('change', function(){ lastChanged = 'min'; filter(); });
+          maxI?.addEventListener('change', function(){ lastChanged = 'max'; filter(); });
           // Inicialização
           requestAnimationFrame(filter);
         })();
