@@ -126,6 +126,11 @@ export default function HomePage(){
           cat?.addEventListener('change', filter);
           minR?.addEventListener('input', filter);
           maxR?.addEventListener('input', filter);
+          // Bring active thumb to front to improve dragging
+          function front(e){ e.target.style.zIndex = '10'; }
+          function back(e){ e.target.style.zIndex = '5'; }
+          minR?.addEventListener('pointerdown', front); minR?.addEventListener('pointerup', back); minR?.addEventListener('pointerleave', back);
+          maxR?.addEventListener('pointerdown', front); maxR?.addEventListener('pointerup', back); maxR?.addEventListener('pointerleave', back);
           // Inicialização
           clampHandles();
         })();

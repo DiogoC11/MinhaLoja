@@ -30,6 +30,41 @@ body { background: var(--bg); color: var(--fg); }
   overflow: hidden;
 }
 
+/* Dual range slider styles (only inside #rangeWrap) */
+#rangeWrap input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 0;
+}
+#rangeWrap input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background-color: #60a5fa; /* blue-400 */
+  border: 2px solid #1f2937; /* slate-800 */
+  border-radius: 9999px;
+  cursor: pointer;
+  position: relative;
+}
+#rangeWrap input[type=range]::-webkit-slider-runnable-track {
+  height: 0;
+  background: transparent;
+}
+#rangeWrap input[type=range]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background-color: #60a5fa;
+  border: 2px solid #1f2937;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+#rangeWrap input[type=range]::-moz-range-track {
+  height: 0;
+  background: transparent;
+}
+
 .line-clamp-1 {
   display: -webkit-box;
   line-clamp: 1;
