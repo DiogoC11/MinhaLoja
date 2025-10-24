@@ -205,7 +205,7 @@ export default function AdminPage(){
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <button
-                      className="btn btn-ghost px-2 text-slate-300 hover:text-slate-400"
+                      className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-blue-400 text-slate-900 font-semibold hover:bg-blue-500 transition-colors transition-transform duration-150 ease-out hover:-translate-y-0.5"
                       title="Editar"
                       aria-label="Editar"
                       onClick={() => {
@@ -218,13 +218,13 @@ export default function AdminPage(){
                       disabled={busy}
                     >
                       {/* Lápis */}
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
                         <path d="M21.731 2.269a2.625 2.625 0 0 0-3.714 0l-1.157 1.157 3.714 3.714 1.157-1.157a2.625 2.625 0 0 0 0-3.714z" />
                         <path d="M19.513 8.199 15.8 4.486 4.034 16.251a5.25 5.25 0 0 0-1.32 2.165l-.746 2.238a.75.75 0 0 0 .95.95l2.238-.746a5.25 5.25 0 0 0 2.165-1.32L19.513 8.2z" />
                       </svg>
                     </button>
                     <button
-                      className="px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/60"
+                      className="px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/60 transition-colors transition-transform duration-150 ease-out hover:-translate-y-0.5"
                       title="Remover"
                       aria-label="Remover"
                       onClick={() => { if (busy) return; setDelTarget({ id: p.id, nome: p.nome }); setDelOpen(true); }}

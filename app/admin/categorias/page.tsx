@@ -89,7 +89,7 @@ export default function AdminCategoriesPage(){
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-3">Categorias</h2>
+      <h2 className="text-xl font-semibold mb-3">Adicionar Categoria</h2>
       {notice && (
         <div
           className={

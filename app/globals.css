@@ -115,3 +115,5 @@ body,
 *::-webkit-scrollbar-thumb:hover {
   background-color: var(--sb-thumb-hover);
 }
+
+/* (removed) Utility to hide only vertical scrollbar */
