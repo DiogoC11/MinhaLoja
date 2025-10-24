@@ -46,27 +46,64 @@ export default function AdminDashboard(){
       </div>
 
       <div className="rounded-lg border border-slate-700/50 bg-slate-900/30 p-4">
-        <div className="font-semibold mb-2">Produtos mais comprados (últimos 30 dias)</div>
+        <div className="font-semibold mb-3">Produtos mais comprados (últimos 30 dias)</div>
         {top.length === 0 ? (
           <div className="text-slate-400">Sem dados de compras.</div>
         ) : (
-          <div className="space-y-3">
-            {top.map(({ productId, qty, product }) => (
-              <div key={productId} className="flex items-center gap-3">
-                <div className="w-48 shrink-0 text-sm text-slate-200 truncate" title={product?.nome || '(produto removido)'}>
-                  {product?.nome || '(produto removido)'}
-                </div>
-                <div className="flex-1">
-                  <div className="h-4 bg-slate-800 rounded">
-                    <div
-                      className="h-4 bg-emerald-500 rounded"
-                      style={{ width: `${maxQty ? (qty / maxQty) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="w-10 text-right font-medium">x{qty}</div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            {(() => {
+              const margin = { top: 16, right: 16, bottom: 56, left: 40 };
+              const H = 320;
+              const innerH = H - margin.top - margin.bottom;
+              const barArea = Math.max(360, top.length * 100);
+              const W = margin.left + barArea + margin.right;
+              const innerW = W - margin.left - margin.right;
+              const yMax = Math.max(1, maxQty);
+              const ticks = 5;
+              const yTicks = Array.from({ length: ticks + 1 }, (_, i) => Math.round((yMax * i) / ticks));
+              const band = innerW / top.length;
+              const barW = Math.min(64, Math.max(28, band * 0.6));
+              const color = '#3B82F6'; // tailwind blue-500
+              return (
+                <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ minWidth: W }}>
+                  <rect x={0} y={0} width={W} height={H} fill="transparent" />
+                  {/* Y gridlines */}
+                  {yTicks.map((t) => {
+                    const y = margin.top + innerH - (t / yMax) * innerH;
+                    return (
+                      <g key={t}>
+                        <line x1={margin.left} x2={W - margin.right} y1={y} y2={y} stroke="#334155" strokeOpacity={0.5} />
+                        <text x={margin.left - 8} y={y} textAnchor="end" dominantBaseline="middle" fill="#94a3b8" fontSize={12}>
+                          {t}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  {/* Bars */}
+                  {top.map(({ productId, qty, product }, i) => {
+                    const x = margin.left + i * band + (band - barW) / 2;
+                    const h = (qty / yMax) * innerH;
+                    const y = margin.top + innerH - h;
+                    const name = product?.nome || '(produto removido)';
+                    return (
+                      <g key={productId}>
+                        <rect x={x} y={y} width={barW} height={h} fill={color} opacity={0.9} />
+                        {/* value label */}
+                        <text x={x + barW / 2} y={y - 6} textAnchor="middle" fill="#cbd5e1" fontSize={12}>
+                          {qty}
+                        </text>
+                        {/* x label */}
+                        <text x={x + barW / 2} y={H - margin.bottom + 28} textAnchor="middle" fill="#e2e8f0" fontSize={12} style={{ pointerEvents: 'none' }}>
+                          {name.length > 16 ? name.slice(0, 15) + '…' : name}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  {/* x-axis line */}
+                  <line x1={margin.left} x2={W - margin.right} y1={H - margin.bottom} y2={H - margin.bottom} stroke="#475569" />
+                </svg>
+              );
+            })()}
           </div>
         )}
       </div>
