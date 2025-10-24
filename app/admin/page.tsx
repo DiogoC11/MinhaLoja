@@ -188,7 +188,7 @@ export default function AdminPage(){
               <th className="px-3 py-2">Nome</th>
               <th className="px-3 py-2">Categoria</th>
               <th className="px-3 py-2">Preço</th>
-              <th className="px-3 py-2 w-[160px]">Ações</th>
+              <th className="px-3 py-2 w-[140px]">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -198,7 +198,55 @@ export default function AdminPage(){
                 <td className="px-3 py-2">{p.categoria}</td>
                 <td className="px-3 py-2">{formatPriceEUR(p.preco)}</td>
                 <td className="px-3 py-2">
-                  <button className="btn" onClick={() => { setEditId(p.id); setEdit({ nome: p.nome, preco: p.preco, categoria: p.categoria, imagem: p.imagem, imagens: p.imagens||[], descricao: p.descricao }); setEditFiles([]); setEditPreviews([]); setEditOpen(true); }} disabled={busy}>Editar</button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      className="btn btn-ghost px-2"
+                      title="Editar"
+                      aria-label="Editar"
+                      onClick={() => {
+                        setEditId(p.id);
+                        setEdit({ nome: p.nome, preco: p.preco, categoria: p.categoria, imagem: p.imagem, imagens: p.imagens||[], descricao: p.descricao });
+                        setEditFiles([]);
+                        setEditPreviews([]);
+                        setEditOpen(true);
+                      }}
+                      disabled={busy}
+                    >
+                      {/* Lápis */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                        <path d="M21.731 2.269a2.625 2.625 0 0 0-3.714 0l-1.157 1.157 3.714 3.714 1.157-1.157a2.625 2.625 0 0 0 0-3.714z" />
+                        <path d="M19.513 8.199 15.8 4.486 4.034 16.251a5.25 5.25 0 0 0-1.32 2.165l-.746 2.238a.75.75 0 0 0 .95.95l2.238-.746a5.25 5.25 0 0 0 2.165-1.32L19.513 8.2z" />
+                      </svg>
+                    </button>
+                    <button
+                      className="btn btn-ghost px-2 text-red-400 hover:text-red-200"
+                      title="Remover"
+                      aria-label="Remover"
+                      onClick={async () => {
+                        if (busy) return;
+                        const ok = confirm(`Remover o produto \"${p.nome}\"?`);
+                        if (!ok) return;
+                        setBusy(true);
+                        try{
+                          const r = await fetch(`/api/products/${p.id}`, { method: 'DELETE' });
+                          if (!r.ok) throw new Error('Falha ao remover');
+                          await mutate('/api/products');
+                          setNotice({ text: 'Produto removido.', kind: 'success' });
+                          setTimeout(()=>setNotice(null), 2500);
+                        }catch(err: any){
+                          setNotice({ text: err?.message || 'Erro ao remover', kind: 'error' });
+                          setTimeout(()=>setNotice(null), 3000);
+                        }finally{ setBusy(false); }
+                      }}
+                      disabled={busy}
+                    >
+                      {/* Lixo */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                        <path d="M9 3.75A.75.75 0 0 1 9.75 3h4.5a.75.75 0 0 1 .75.75V6h3a.75.75 0 0 1 0 1.5h-.443l-1.007 11.08A2.25 2.25 0 0 1 14.311 21H9.689a2.25 2.25 0 0 1-2.238-2.42L6.443 7.5H6A.75.75 0 0 1 6 6h3V3.75zM10.5 6h3V4.5h-3V6z" />
+                        <path d="M10 9.75a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75zm4 0a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75z" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

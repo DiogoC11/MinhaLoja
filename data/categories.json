@@ -38,5 +38,10 @@
     "id": "cat-carnaval-5sbonh",
     "nome": "Carnaval",
     "createdAt": 1761329277134
+  },
+  {
+    "id": "cat-brinquedo-kapq43",
+    "nome": "Brinquedo",
+    "createdAt": 1761329708340
   }
 ]
