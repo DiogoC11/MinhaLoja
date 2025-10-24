@@ -13,5 +13,30 @@
     "id": "cat-enfeite-u8a8qv",
     "nome": "Enfeite",
     "createdAt": 1761174700209
+  },
+  {
+    "id": "cat-casa-ldljsf",
+    "nome": "Casa",
+    "createdAt": 1761329235706
+  },
+  {
+    "id": "cat-jardim-0n7hnc",
+    "nome": "Jardim",
+    "createdAt": 1761329245590
+  },
+  {
+    "id": "cat-natal-8tk643",
+    "nome": "Natal",
+    "createdAt": 1761329256799
+  },
+  {
+    "id": "cat-halloween-ncvnux",
+    "nome": "Halloween",
+    "createdAt": 1761329271340
+  },
+  {
+    "id": "cat-carnaval-5sbonh",
+    "nome": "Carnaval",
+    "createdAt": 1761329277134
   }
 ]
