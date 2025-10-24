@@ -32,6 +32,11 @@ export default function AdminPage(){
     return () => { editPreviews.forEach(url => URL.revokeObjectURL(url)); };
   }, [editPreviews]);
 
+  // Delete modal state
+  const [delOpen, setDelOpen] = useState(false);
+  const [delBusy, setDelBusy] = useState(false);
+  const [delTarget, setDelTarget] = useState<{ id: string; nome: string } | null>(null);
+
   // Proteger página: requer sessão
   useState(() => {
     (async () => {
@@ -200,7 +205,7 @@ export default function AdminPage(){
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     <button
-                      className="btn btn-ghost px-2"
+                      className="btn btn-ghost px-2 text-slate-300 hover:text-slate-400"
                       title="Editar"
                       aria-label="Editar"
                       onClick={() => {
@@ -219,25 +224,10 @@ export default function AdminPage(){
                       </svg>
                     </button>
                     <button
-                      className="btn btn-ghost px-2 text-red-400 hover:text-red-200"
+                      className="btn btn-ghost px-2 text-red-500 hover:text-red-600"
                       title="Remover"
                       aria-label="Remover"
-                      onClick={async () => {
-                        if (busy) return;
-                        const ok = confirm(`Remover o produto \"${p.nome}\"?`);
-                        if (!ok) return;
-                        setBusy(true);
-                        try{
-                          const r = await fetch(`/api/products/${p.id}`, { method: 'DELETE' });
-                          if (!r.ok) throw new Error('Falha ao remover');
-                          await mutate('/api/products');
-                          setNotice({ text: 'Produto removido.', kind: 'success' });
-                          setTimeout(()=>setNotice(null), 2500);
-                        }catch(err: any){
-                          setNotice({ text: err?.message || 'Erro ao remover', kind: 'error' });
-                          setTimeout(()=>setNotice(null), 3000);
-                        }finally{ setBusy(false); }
-                      }}
+                      onClick={() => { if (busy) return; setDelTarget({ id: p.id, nome: p.nome }); setDelOpen(true); }}
                       disabled={busy}
                     >
                       {/* Lixo */}
@@ -369,6 +359,43 @@ export default function AdminPage(){
             <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" required />
           </div>
         </form>
+      </Modal>
+
+      {/* Delete confirmation modal */}
+      <Modal
+        open={delOpen}
+        title="Eliminar produto"
+        onClose={() => !delBusy && setDelOpen(false)}
+        footer={
+          <>
+            <button className="btn btn-ghost" onClick={() => setDelOpen(false)} disabled={delBusy}>Cancelar</button>
+            <button
+              className="btn bg-red-600 hover:bg-red-700"
+              onClick={async ()=>{
+                if (!delTarget) return;
+                setDelBusy(true);
+                try{
+                  const r = await fetch(`/api/products/${delTarget.id}`, { method: 'DELETE' });
+                  if (!r.ok) throw new Error('Falha ao remover');
+                  await mutate('/api/products');
+                  setNotice({ text: 'Produto removido.', kind: 'success' });
+                  setTimeout(()=>setNotice(null), 2500);
+                  setDelOpen(false);
+                  setDelTarget(null);
+                }catch(err: any){
+                  setNotice({ text: err?.message || 'Erro ao remover', kind: 'error' });
+                  setTimeout(()=>setNotice(null), 3000);
+                }finally{ setDelBusy(false); }
+              }}
+              disabled={delBusy}
+            >Eliminar</button>
+          </>
+        }
+      >
+        <p>
+          Tem a certeza que quer eliminar o produto{' '}
+          <span className="font-semibold">{delTarget?.nome}</span>? Esta ação é irreversível.
+        </p>
       </Modal>
     </div>
   );
