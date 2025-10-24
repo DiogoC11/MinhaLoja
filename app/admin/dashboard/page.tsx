@@ -1,13 +1,13 @@
 "use client";
 import useSWR from 'swr';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Order } from '@/lib/orders';
 import type { Product } from '@/lib/fsdb';
 import { formatPriceEUR } from '@/lib/format';
 
 const fetcher = (u: string) => fetch(u).then(r=>r.json());
 
-function AutoScroll({ children, depKey }: { children: React.ReactNode; depKey?: string }){
+function AutoScroll({ children, depKey }: { children: ReactNode; depKey?: string }){
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -21,6 +21,7 @@ function AutoScroll({ children, depKey }: { children: React.ReactNode; depKey?: 
 export default function AdminDashboard(){
   const { data: orders } = useSWR<Order[]>('/api/orders', fetcher);
   const { data: products } = useSWR<Product[]>('/api/products', fetcher);
+  const [topRange, setTopRange] = useState<'all'|'3m'|'1m'>('1m');
   const list = orders || [];
   const prods = products || [];
   const prodMap = new Map(prods.map(p => [p.id, p] as const));
@@ -30,8 +31,13 @@ export default function AdminDashboard(){
   const recent = list.filter(o => (now - o.createdAt) <= thirtyDays);
   const comprasUltimoMes = recent.length;
 
+  // Determinar período para o gráfico de "mais comprados"
+  function monthsAgoStart(n: number){ const d = new Date(); d.setHours(0,0,0,0); d.setMonth(d.getMonth()-n); return d.getTime(); }
+  const fromTs = topRange === 'all' ? 0 : monthsAgoStart(topRange === '3m' ? 3 : 1);
+  const ordersForTop = topRange === 'all' ? list : list.filter(o => o.createdAt >= fromTs);
+
   const qtyByProduct = new Map<string, number>();
-  for (const o of recent){
+  for (const o of ordersForTop){
     for (const it of o.items){
       qtyByProduct.set(it.productId, (qtyByProduct.get(it.productId)||0) + it.qty);
     }
@@ -69,11 +75,25 @@ export default function AdminDashboard(){
     <div className="grid gap-4">
       {/* Produtos mais comprados primeiro */}
       <div className="rounded-lg border border-slate-700/50 bg-slate-900/30 p-4">
-        <div className="font-semibold mb-3">Produtos mais comprados (últimos 30 dias)</div>
+        <div className="flex items-center justify-between mb-3">
+          <div className="font-semibold">Produtos mais comprados</div>
+          <div className="flex items-center gap-2 text-sm">
+            <label className="text-slate-400">Período</label>
+            <select
+              className="border border-slate-600 rounded bg-slate-900 px-2 py-1"
+              value={topRange}
+              onChange={e=>setTopRange(e.target.value as 'all'|'3m'|'1m')}
+            >
+              <option value="all">Desde sempre</option>
+              <option value="3m">Últimos 3 meses</option>
+              <option value="1m">Último mês</option>
+            </select>
+          </div>
+        </div>
         {top.length === 0 ? (
           <div className="text-slate-400">Sem dados de compras.</div>
         ) : (
-          <AutoScroll depKey={top.map(t=>`${t.productId}:${t.qty}`).join('|')}>
+          <AutoScroll depKey={topRange + '|' + top.map(t=>`${t.productId}:${t.qty}`).join('|')}>
             {(() => {
               const margin = { top: 16, right: 16, bottom: 56, left: 40 };
               const H = 320;
