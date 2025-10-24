@@ -49,10 +49,7 @@ export default function Header(){
           <Link href="/produtos">Produtos</Link>
           <Link href="/carrinho" className="cart-link">Carrinho <span className="badge">{count}</span></Link>
           <Link href="/contactos">Contactos</Link>
-          {isAdmin && <>
-            <Link href="/admin">Adicionar produto</Link>
-            <Link href="/admin/categorias">Categorias</Link>
-          </>}
+          {isAdmin && <Link href="/admin/dashboard">Admin</Link>}
           <Link href="/login" id="auth-link" className="flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
