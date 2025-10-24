@@ -224,7 +224,7 @@ export default function AdminPage(){
                       </svg>
                     </button>
                     <button
-                      className="btn btn-ghost px-2 text-red-500 hover:text-red-600"
+                      className="px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/60"
                       title="Remover"
                       aria-label="Remover"
                       onClick={() => { if (busy) return; setDelTarget({ id: p.id, nome: p.nome }); setDelOpen(true); }}
