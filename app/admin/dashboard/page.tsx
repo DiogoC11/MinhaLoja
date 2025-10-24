@@ -1,10 +1,22 @@
 "use client";
 import useSWR from 'swr';
+import { useEffect, useRef } from 'react';
 import type { Order } from '@/lib/orders';
 import type { Product } from '@/lib/fsdb';
 import { formatPriceEUR } from '@/lib/format';
 
 const fetcher = (u: string) => fetch(u).then(r=>r.json());
+
+function AutoScroll({ children, depKey }: { children: React.ReactNode; depKey?: string }){
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    // Scroll to the far right (today) after layout
+    requestAnimationFrame(() => { el.scrollLeft = el.scrollWidth; });
+  }, [depKey]);
+  return <div ref={ref} className="overflow-x-auto">{children}</div>;
+}
 
 export default function AdminDashboard(){
   const { data: orders } = useSWR<Order[]>('/api/orders', fetcher);
@@ -61,7 +73,7 @@ export default function AdminDashboard(){
         {top.length === 0 ? (
           <div className="text-slate-400">Sem dados de compras.</div>
         ) : (
-          <div className="overflow-x-auto">
+          <AutoScroll depKey={top.map(t=>`${t.productId}:${t.qty}`).join('|')}>
             {(() => {
               const margin = { top: 16, right: 16, bottom: 56, left: 40 };
               const H = 320;
@@ -110,7 +122,7 @@ export default function AdminDashboard(){
                 </svg>
               );
             })()}
-          </div>
+          </AutoScroll>
         )}
       </div>
 
@@ -137,7 +149,7 @@ export default function AdminDashboard(){
           });
           const path = points.map((p,i)=> `${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
           return (
-            <div className="overflow-x-auto">
+            <AutoScroll depKey={labels.join(',') + '|' + dailyCounts.join(',')}>
               <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ minWidth: W }}>
                 {/* grid and y-axis labels */}
                 {yTicks.map((t) => {
@@ -169,7 +181,7 @@ export default function AdminDashboard(){
                   </g>
                 ))}
               </svg>
-            </div>
+            </AutoScroll>
           );
         })()}
       </div>
@@ -195,7 +207,7 @@ export default function AdminDashboard(){
           });
           const path = points.map((p,i)=> `${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
           return (
-            <div className="overflow-x-auto">
+            <AutoScroll depKey={labels.join(',') + '|' + dailyRevenue.join(',')}>
               <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} style={{ minWidth: W }}>
                 {yTicks.map((t, idx) => {
                   const y = margin.top + innerH - (t / yMax) * innerH;
@@ -222,7 +234,7 @@ export default function AdminDashboard(){
                   </g>
                 ))}
               </svg>
-            </div>
+            </AutoScroll>
           );
         })()}
         </div>

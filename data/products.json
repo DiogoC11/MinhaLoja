@@ -67,20 +67,14 @@
     "categoria": "Enfeite"
   },
   {
-    "id": "pretos-15md72",
-    "nome": "Pretos",
-    "preco": 9999,
-    "descricao": "Forte",
-    "imagem": "/uploads/img-1761255897792-86ztyhlc.jpg",
-    "categoria": "Enfeite"
-  },
-  {
     "id": "p9",
     "nome": "Camisola Azul",
     "preco": 59.9,
     "descricao": "Camisola azul confortável em malha.",
     "imagem": "https://source.unsplash.com/featured/?blue,sweater",
-    "imagens": ["https://source.unsplash.com/featured/?blue,sweater"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?blue,sweater"
+    ],
     "categoria": "Roupa"
   },
   {
@@ -89,7 +83,9 @@
     "preco": 129.9,
     "descricao": "Sapatilhas brancas leves e versáteis.",
     "imagem": "https://source.unsplash.com/featured/?white,sneakers",
-    "imagens": ["https://source.unsplash.com/featured/?white,sneakers"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?white,sneakers"
+    ],
     "categoria": "Roupa"
   },
   {
@@ -98,7 +94,9 @@
     "preco": 499,
     "descricao": "Relógio clássico com acabamento dourado.",
     "imagem": "https://source.unsplash.com/featured/?gold,watch",
-    "imagens": ["https://source.unsplash.com/featured/?gold,watch"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?gold,watch"
+    ],
     "categoria": "Enfeite"
   },
   {
@@ -107,7 +105,9 @@
     "preco": 39.9,
     "descricao": "Garrafa térmica em aço inox, 600ml.",
     "imagem": "https://source.unsplash.com/featured/?stainless,thermos",
-    "imagens": ["https://source.unsplash.com/featured/?stainless,thermos"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?stainless,thermos"
+    ],
     "categoria": "Casa"
   },
   {
@@ -116,7 +116,9 @@
     "preco": 349.9,
     "descricao": "Mala de couro legítimo, durável e moderna.",
     "imagem": "https://source.unsplash.com/featured/?leather,bag",
-    "imagens": ["https://source.unsplash.com/featured/?leather,bag"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?leather,bag"
+    ],
     "categoria": "Enfeite"
   },
   {
@@ -125,7 +127,9 @@
     "preco": 29.9,
     "descricao": "Vaso de cerâmica ideal para plantas de exterior.",
     "imagem": "https://source.unsplash.com/featured/?garden,pot",
-    "imagens": ["https://source.unsplash.com/featured/?garden,pot"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?garden,pot"
+    ],
     "categoria": "Jardim"
   },
   {
@@ -134,7 +138,9 @@
     "preco": 19.9,
     "descricao": "Conjunto de bolas e ornamentos natalícios.",
     "imagem": "https://source.unsplash.com/featured/?christmas,decorations",
-    "imagens": ["https://source.unsplash.com/featured/?christmas,decorations"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?christmas,decorations"
+    ],
     "categoria": "Natal"
   },
   {
@@ -143,7 +149,9 @@
     "preco": 14.9,
     "descricao": "Abóbora decorativa para o Halloween.",
     "imagem": "https://source.unsplash.com/featured/?halloween,pumpkin",
-    "imagens": ["https://source.unsplash.com/featured/?halloween,pumpkin"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?halloween,pumpkin"
+    ],
     "categoria": "Halloween"
   },
   {
@@ -152,7 +160,9 @@
     "preco": 79.9,
     "descricao": "Fato colorido perfeito para o Carnaval.",
     "imagem": "https://source.unsplash.com/featured/?carnival,costume",
-    "imagens": ["https://source.unsplash.com/featured/?carnival,costume"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?carnival,costume"
+    ],
     "categoria": "Carnaval"
   },
   {
@@ -161,7 +171,9 @@
     "preco": 24.9,
     "descricao": "Miniatura colecionável de carro desportivo.",
     "imagem": "https://source.unsplash.com/featured/?toy,car",
-    "imagens": ["https://source.unsplash.com/featured/?toy,car"],
+    "imagens": [
+      "https://source.unsplash.com/featured/?toy,car"
+    ],
     "categoria": "Carro"
   }
 ]
