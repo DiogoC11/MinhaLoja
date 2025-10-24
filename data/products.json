@@ -71,9 +71,9 @@
     "nome": "Camisola Azul",
     "preco": 59.9,
     "descricao": "Camisola azul confortável em malha.",
-    "imagem": "https://source.unsplash.com/featured/?blue,sweater",
+    "imagem": "https://picsum.photos/seed/camisola-azul/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?blue,sweater"
+      "https://picsum.photos/seed/camisola-azul/800/600"
     ],
     "categoria": "Roupa"
   },
@@ -82,9 +82,9 @@
     "nome": "Sapatilhas Brancas",
     "preco": 129.9,
     "descricao": "Sapatilhas brancas leves e versáteis.",
-    "imagem": "https://source.unsplash.com/featured/?white,sneakers",
+    "imagem": "https://picsum.photos/seed/sapatilhas-brancas/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?white,sneakers"
+      "https://picsum.photos/seed/sapatilhas-brancas/800/600"
     ],
     "categoria": "Roupa"
   },
@@ -93,9 +93,9 @@
     "nome": "Relógio Dourado",
     "preco": 499,
     "descricao": "Relógio clássico com acabamento dourado.",
-    "imagem": "https://source.unsplash.com/featured/?gold,watch",
+    "imagem": "https://picsum.photos/seed/relogio-dourado/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?gold,watch"
+      "https://picsum.photos/seed/relogio-dourado/800/600"
     ],
     "categoria": "Enfeite"
   },
@@ -104,9 +104,9 @@
     "nome": "Garrafa Térmica Inox",
     "preco": 39.9,
     "descricao": "Garrafa térmica em aço inox, 600ml.",
-    "imagem": "https://source.unsplash.com/featured/?stainless,thermos",
+    "imagem": "https://picsum.photos/seed/garrafa-inox/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?stainless,thermos"
+      "https://picsum.photos/seed/garrafa-inox/800/600"
     ],
     "categoria": "Casa"
   },
@@ -115,9 +115,9 @@
     "nome": "Mala de Couro",
     "preco": 349.9,
     "descricao": "Mala de couro legítimo, durável e moderna.",
-    "imagem": "https://source.unsplash.com/featured/?leather,bag",
+    "imagem": "https://picsum.photos/seed/mala-couro/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?leather,bag"
+      "https://picsum.photos/seed/mala-couro/800/600"
     ],
     "categoria": "Enfeite"
   },
@@ -126,9 +126,9 @@
     "nome": "Vaso de Jardim",
     "preco": 29.9,
     "descricao": "Vaso de cerâmica ideal para plantas de exterior.",
-    "imagem": "https://source.unsplash.com/featured/?garden,pot",
+    "imagem": "https://picsum.photos/seed/vaso-jardim/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?garden,pot"
+      "https://picsum.photos/seed/vaso-jardim/800/600"
     ],
     "categoria": "Jardim"
   },
@@ -137,9 +137,9 @@
     "nome": "Decoração de Natal",
     "preco": 19.9,
     "descricao": "Conjunto de bolas e ornamentos natalícios.",
-    "imagem": "https://source.unsplash.com/featured/?christmas,decorations",
+    "imagem": "https://picsum.photos/seed/decoracao-natal/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?christmas,decorations"
+      "https://picsum.photos/seed/decoracao-natal/800/600"
     ],
     "categoria": "Natal"
   },
@@ -148,9 +148,9 @@
     "nome": "Abóbora de Halloween",
     "preco": 14.9,
     "descricao": "Abóbora decorativa para o Halloween.",
-    "imagem": "https://source.unsplash.com/featured/?halloween,pumpkin",
+    "imagem": "https://picsum.photos/seed/abobora-halloween/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?halloween,pumpkin"
+      "https://picsum.photos/seed/abobora-halloween/800/600"
     ],
     "categoria": "Halloween"
   },
@@ -159,9 +159,9 @@
     "nome": "Fato de Carnaval",
     "preco": 79.9,
     "descricao": "Fato colorido perfeito para o Carnaval.",
-    "imagem": "https://source.unsplash.com/featured/?carnival,costume",
+    "imagem": "https://picsum.photos/seed/fato-carnaval/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?carnival,costume"
+      "https://picsum.photos/seed/fato-carnaval/800/600"
     ],
     "categoria": "Carnaval"
   },
@@ -170,9 +170,9 @@
     "nome": "Miniatura de Carro",
     "preco": 24.9,
     "descricao": "Miniatura colecionável de carro desportivo.",
-    "imagem": "https://source.unsplash.com/featured/?toy,car",
+    "imagem": "https://picsum.photos/seed/miniatura-carro/800/600",
     "imagens": [
-      "https://source.unsplash.com/featured/?toy,car"
+      "https://picsum.photos/seed/miniatura-carro/800/600"
     ],
     "categoria": "Carro"
   }
