@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import useSWR, { mutate } from 'swr';
 import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
 import Modal from '@/components/Modal';
 import { formatPriceEUR } from '@/lib/format';
+import ProductThumbCarousel from '@/components/ProductThumbCarousel';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -83,6 +85,8 @@ export default function AdminPage(){
     try { (e.currentTarget as any).releasePointerCapture?.(dragRef.current.pid); } catch {}
     setDragging(false);
     dragRef.current.axis = '';
+    // Clear moved so next click is not eaten
+    dragRef.current.moved = false;
   };
 
   // Multi-column sorting (Nome, Categoria, Preço). Cycle: none -> asc -> desc -> none
@@ -266,12 +270,12 @@ export default function AdminPage(){
           <label className="text-slate-400">Descrição</label>
           <textarea name="descricao" className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" placeholder="Detalhes do produto"></textarea>
         </div>
-        <div className="flex gap-2 justify-end mt-3">
-          <button type="button" className="btn" onClick={onExport}>Exportar JSON</button>
-          <label className="btn cursor-pointer">Importar JSON
+        <div className="flex flex-wrap gap-2 justify-end mt-3 min-w-0">
+          <button type="button" className="btn block sm:inline-flex w-auto max-w-full px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-2 leading-tight break-words text-center sm:whitespace-nowrap" onClick={onExport}>Exportar JSON</button>
+          <label className="btn cursor-pointer block sm:inline-flex w-auto max-w-full px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-2 leading-tight break-words text-center sm:whitespace-nowrap">Importar JSON
             <input type="file" accept="application/json" className="hidden" onChange={onImport} />
           </label>
-             <button type="submit" className="btn" disabled={busy}>{busy? 'A guardar...' : 'Guardar produto'}</button>
+             <button type="submit" className="btn block sm:inline-flex w-auto max-w-full px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-2 leading-tight break-words text-center sm:whitespace-nowrap" disabled={busy}>{busy? 'A guardar...' : 'Guardar produto'}</button>
         </div>
       </form>
 
@@ -285,11 +289,18 @@ export default function AdminPage(){
           onPointerUp={onListPointerEnd}
           onPointerCancel={onListPointerEnd}
           onPointerLeave={onListPointerEnd}
-          onClickCapture={(e) => { if (dragRef.current.moved) { e.preventDefault(); e.stopPropagation(); dragRef.current.moved = false; } }}
+          onClickCapture={(e) => {
+            if (dragRef.current.moved) {
+              e.preventDefault();
+              e.stopPropagation();
+              dragRef.current.moved = false;
+            }
+          }}
         >
           <table className="w-full">
             <thead className="sticky top-0 z-[1] text-left bg-slate-800 rounded-tl-xl">
               <tr>
+                <th className="px-3 py-2 w-[132px] select-none">Imagens</th>
                 <th className="px-3 py-2 select-none">
                   <button type="button" className="inline-flex items-center gap-1 hover:text-blue-300" onClick={() => toggleSort('nome')}>
                     Nome
@@ -317,7 +328,14 @@ export default function AdminPage(){
             <tbody>
             {sortedProducts.map((p) => (
               <tr key={p.id} className="border-t border-slate-700">
-                <td className="px-3 py-2">{p.nome}</td>
+                <td className="px-3 py-2">
+                  <ProductThumbCarousel images={(p.imagens && p.imagens.length ? p.imagens : (p.imagem ? [p.imagem] : [])) as string[]} alt={p.nome} />
+                </td>
+                <td className="px-3 py-2">
+                  <Link href={`/produto/${p.id}`} className="hover:text-blue-300 underline-offset-2 hover:underline">
+                    {p.nome}
+                  </Link>
+                </td>
                 <td className="px-3 py-2">{p.categoria}</td>
                 <td className="px-3 py-2">{formatPriceEUR(p.preco)}</td>
                 <td className="px-3 py-2">
@@ -359,7 +377,7 @@ export default function AdminPage(){
               </tr>
             ))}
             {(data||[]).length === 0 && (
-              <tr><td className="px-3 py-6 text-center text-slate-400" colSpan={4}>Sem produtos.</td></tr>
+              <tr><td className="px-3 py-6 text-center text-slate-400" colSpan={5}>Sem produtos.</td></tr>
             )}
             </tbody>
           </table>
