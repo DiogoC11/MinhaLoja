@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
 import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
@@ -17,10 +17,12 @@ export default function AdminPage(){
   // Previews para criação
   const [createFiles, setCreateFiles] = useState<File[]>([]);
   const [createPreviews, setCreatePreviews] = useState<string[]>([]);
+  const createPreviewsRef = useRef<string[]>([]);
+  useEffect(() => { createPreviewsRef.current = createPreviews; }, [createPreviews]);
   useEffect(() => {
-    // libertar URLs antigas
-    return () => { createPreviews.forEach(url => URL.revokeObjectURL(url)); };
-  }, [createPreviews]);
+    // Libertar qualquer URL ainda ativa ao desmontar o componente
+    return () => { createPreviewsRef.current.forEach(url => { try{ URL.revokeObjectURL(url); }catch{} }); };
+  }, []);
 
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
@@ -36,6 +38,91 @@ export default function AdminPage(){
   const [delOpen, setDelOpen] = useState(false);
   const [delBusy, setDelBusy] = useState(false);
   const [delTarget, setDelTarget] = useState<{ id: string; nome: string } | null>(null);
+  // Drag-to-scroll for products list
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef({ down: false, startX: 0, startY: 0, sx: 0, sy: 0, moved: false, pid: 0, axis: '' as '' | 'x' | 'y' });
+  const [dragging, setDragging] = useState(false);
+
+  const onListPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // only left click
+    // Ignore drags starting on interactive elements or table header (allow clicks/sorting)
+    const el = e.target as HTMLElement;
+    if (el.closest('thead, button, a, input, select, textarea')) return;
+    dragRef.current.down = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startY = e.clientY;
+    dragRef.current.sx = listRef.current?.scrollLeft || 0;
+    dragRef.current.sy = listRef.current?.scrollTop || 0;
+    dragRef.current.moved = false;
+    dragRef.current.pid = e.pointerId;
+    dragRef.current.axis = '';
+    try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
+  };
+  const onListPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.down) return;
+    const el = listRef.current; if (!el) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (!dragRef.current.axis) {
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        dragRef.current.axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      }
+    }
+    if (dragRef.current.axis === 'x') {
+      if (!dragging) setDragging(true);
+      el.scrollLeft = dragRef.current.sx - dx;
+      if (Math.abs(dx) > 2) dragRef.current.moved = true;
+      e.preventDefault(); // prevent text selection and native gestures while horizontal dragging
+    } else if (dragRef.current.axis === 'y') {
+      // do not prevent default to allow native vertical scroll (mouse wheel or touch drag)
+    }
+  };
+  const onListPointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.down) return;
+    dragRef.current.down = false;
+    try { (e.currentTarget as any).releasePointerCapture?.(dragRef.current.pid); } catch {}
+    setDragging(false);
+    dragRef.current.axis = '';
+  };
+
+  // Multi-column sorting (Nome, Categoria, Preço). Cycle: none -> asc -> desc -> none
+  type SortKey = 'nome' | 'categoria' | 'preco';
+  type SortDir = 'asc' | 'desc';
+  const [sorts, setSorts] = useState<Array<{ key: SortKey; dir: SortDir }>>([]);
+  const getDir = (key: SortKey): SortDir | null => sorts.find(s => s.key === key)?.dir || null;
+  const toggleSort = (key: SortKey) => {
+    setSorts(prev => {
+      const cur = prev[0];
+      if (!cur || cur.key !== key) {
+        // Activate only this column ascending; clear any others
+        return [{ key, dir: 'asc' }];
+      }
+      // Same column toggles asc -> desc -> none
+      if (cur.dir === 'asc') return [{ key, dir: 'desc' }];
+      return [];
+    });
+  };
+  const sortedProducts = useMemo(() => {
+    const arr = (data || []).map((p, i) => ({ ...(p as any), _idx: i }));
+    if (!sorts.length) return arr as any as Product[];
+    const collator = new Intl.Collator('pt-PT', { sensitivity: 'base' });
+    return [...arr].sort((a: any, b: any) => {
+      // Evaluate in the order clicked: first clicked = highest priority
+      for (let i = 0; i < sorts.length; i++) {
+        const s = sorts[i];
+        if (s.key === 'nome') {
+          const comp = collator.compare(a.nome || '', b.nome || '');
+          if (comp !== 0) return s.dir === 'asc' ? comp : -comp;
+        } else if (s.key === 'categoria') {
+          const comp = collator.compare(a.categoria || '', b.categoria || '');
+          if (comp !== 0) return s.dir === 'asc' ? comp : -comp;
+        } else if (s.key === 'preco') {
+          if (a.preco !== b.preco) return s.dir === 'asc' ? (a.preco - b.preco) : (b.preco - a.preco);
+        }
+      }
+      return a._idx - b._idx; // stable fallback to original
+    }) as any as Product[];
+  }, [data, sorts]);
 
   // Proteger página: requer sessão
   useState(() => {
@@ -126,31 +213,34 @@ export default function AdminPage(){
       )}
       <h2 className="text-xl font-semibold mb-3">Adicionar produto</h2>
       <form className="form card p-4" onSubmit={onSubmit}>
-        <div className="grid md:grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
+        <div className="grid md:grid-cols-2 gap-3 min-w-0">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Nome</label>
-            <input name="nome" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: Camiseta Premium" />
+            <input name="nome" required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: Camiseta Premium" />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
                <label className="text-slate-400">Preço (€)</label>
-            <input name="preco" type="number" min="0" step="0.01" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: 99.90" />
+            <input name="preco" type="number" min="0" step="0.01" required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2" placeholder="Ex.: 99.90" />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Categoria</label>
-            <select name="categoria" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
+            <select name="categoria" required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
               <option value="">Selecione uma categoria</option>
               {(catsData||[]).map((c:any)=> <option key={c.id} value={c.nome}>{c.nome}</option>)}
             </select>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Imagens (ficheiros)</label>
-            <input name="imagensFiles" type="file" accept="image/*" multiple required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2"
+            <input name="imagensFiles" type="file" accept="image/*" multiple required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-400 file:text-slate-900 file:font-semibold file:px-3 file:py-2 hover:file:bg-blue-500 file:transition-colors file:duration-150"
               onChange={(e)=>{
                 const files = Array.from(e.currentTarget.files||[]) as File[];
-                setCreateFiles(files);
-                // previews
+                if (files.length === 0) return;
+                setCreateFiles(prev => [...prev, ...files]);
+                // previews (acrescentar, sem revogar as anteriores)
                 const urls = files.map(f => URL.createObjectURL(f));
-                setCreatePreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
+                setCreatePreviews(prev => [...prev, ...urls]);
+                // permitir escolher novamente os mesmos ficheiros
+                e.currentTarget.value = '';
               }} />
             {createPreviews.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
@@ -172,13 +262,13 @@ export default function AdminPage(){
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-1 mt-3">
+        <div className="flex flex-col gap-1 mt-3 min-w-0">
           <label className="text-slate-400">Descrição</label>
-          <textarea name="descricao" className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" placeholder="Detalhes do produto"></textarea>
+          <textarea name="descricao" className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" placeholder="Detalhes do produto"></textarea>
         </div>
         <div className="flex gap-2 justify-end mt-3">
-          <button type="button" className="btn btn-ghost" onClick={onExport}>Exportar JSON</button>
-          <label className="btn btn-ghost cursor-pointer">Importar JSON
+          <button type="button" className="btn" onClick={onExport}>Exportar JSON</button>
+          <label className="btn cursor-pointer">Importar JSON
             <input type="file" accept="application/json" className="hidden" onChange={onImport} />
           </label>
              <button type="submit" className="btn" disabled={busy}>{busy? 'A guardar...' : 'Guardar produto'}</button>
@@ -186,18 +276,46 @@ export default function AdminPage(){
       </form>
 
       {/* Products list for editing */}
-      <div className="card p-0 overflow-hidden mt-4">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left bg-slate-800">
-              <th className="px-3 py-2">Nome</th>
-              <th className="px-3 py-2">Categoria</th>
-              <th className="px-3 py-2">Preço</th>
-              <th className="px-3 py-2 w-[140px]">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(data||[]).map((p) => (
+      <div className="card p-0 mt-4">
+        <div
+          ref={listRef}
+          className={`overflow-hidden overflow-x-auto overflow-y-auto max-h-[60vh] rounded-t-xl ${dragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+          onPointerDown={onListPointerDown}
+          onPointerMove={onListPointerMove}
+          onPointerUp={onListPointerEnd}
+          onPointerCancel={onListPointerEnd}
+          onPointerLeave={onListPointerEnd}
+          onClickCapture={(e) => { if (dragRef.current.moved) { e.preventDefault(); e.stopPropagation(); dragRef.current.moved = false; } }}
+        >
+          <table className="w-full">
+            <thead className="sticky top-0 z-[1] text-left bg-slate-800 rounded-tl-xl">
+              <tr>
+                <th className="px-3 py-2 select-none">
+                  <button type="button" className="inline-flex items-center gap-1 hover:text-blue-300" onClick={() => toggleSort('nome')}>
+                    Nome
+                    {getDir('nome') === 'asc' && <span aria-hidden>▲</span>}
+                    {getDir('nome') === 'desc' && <span aria-hidden>▼</span>}
+                  </button>
+                </th>
+                <th className="px-3 py-2 select-none">
+                  <button type="button" className="inline-flex items-center gap-1 hover:text-blue-300" onClick={() => toggleSort('categoria')}>
+                    Categoria
+                    {getDir('categoria') === 'asc' && <span aria-hidden>▲</span>}
+                    {getDir('categoria') === 'desc' && <span aria-hidden>▼</span>}
+                  </button>
+                </th>
+                <th className="px-3 py-2 select-none">
+                  <button type="button" className="inline-flex items-center gap-1 hover:text-blue-300" onClick={() => toggleSort('preco')}>
+                    Preço
+                    {getDir('preco') === 'asc' && <span aria-hidden>▲</span>}
+                    {getDir('preco') === 'desc' && <span aria-hidden>▼</span>}
+                  </button>
+                </th>
+                <th className="px-3 py-2 w-[140px]">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+            {sortedProducts.map((p) => (
               <tr key={p.id} className="border-t border-slate-700">
                 <td className="px-3 py-2">{p.nome}</td>
                 <td className="px-3 py-2">{p.categoria}</td>
@@ -243,8 +361,9 @@ export default function AdminPage(){
             {(data||[]).length === 0 && (
               <tr><td className="px-3 py-6 text-center text-slate-400" colSpan={4}>Sem produtos.</td></tr>
             )}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Edit modal */}
@@ -298,31 +417,31 @@ export default function AdminPage(){
             setTimeout(()=>setNotice(null), 3000);
           }finally{ setBusy(false); }
         }} className="grid gap-3">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Nome</label>
-            <input value={edit.nome} onChange={e=>setEdit(s=>({...s, nome: e.target.value}))} required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            <input value={edit.nome} onChange={e=>setEdit(s=>({...s, nome: e.target.value}))} required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
+          <div className="grid grid-cols-2 gap-3 min-w-0">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-slate-400">Preço (€)</label>
-              <input value={edit.preco} onChange={e=>setEdit(s=>({...s, preco: Number(e.target.value)}))} type="number" min="0" step="0.01" required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+              <input value={edit.preco} onChange={e=>setEdit(s=>({...s, preco: Number(e.target.value)}))} type="number" min="0" step="0.01" required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 min-w-0">
               <label className="text-slate-400">Categoria</label>
-              <select value={edit.categoria} onChange={e=>setEdit(s=>({...s, categoria: e.target.value}))} required className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
+              <select value={edit.categoria} onChange={e=>setEdit(s=>({...s, categoria: e.target.value}))} required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2">
                 <option value="">Selecione uma categoria</option>
                 {(catsData||[]).map((c:any)=> <option key={c.id} value={c.nome}>{c.nome}</option>)}
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Imagens</label>
             <input type="file" multiple accept="image/*" onChange={(e)=>{
               const files = Array.from(e.currentTarget.files||[]) as File[];
               setEditFiles(files);
               const urls = files.map(f => URL.createObjectURL(f));
               setEditPreviews(prev => { prev.forEach(u=>URL.revokeObjectURL(u)); return urls; });
-            }} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2" />
+            }} className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-400 file:text-slate-900 file:font-semibold file:px-3 file:py-2 hover:file:bg-blue-500 file:transition-colors file:duration-150" />
             <div className="flex flex-wrap gap-2 mt-2">
               {(edit.imagens && edit.imagens.length ? edit.imagens : [edit.imagem]).filter(Boolean).map((src, i) => (
                 <div key={`exist-${i}`} className="relative">
@@ -354,9 +473,9 @@ export default function AdminPage(){
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Descrição</label>
-            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" required />
+            <textarea value={edit.descricao} onChange={e=>setEdit(s=>({...s, descricao: e.target.value}))} className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 min-h-24" required />
           </div>
         </form>
       </Modal>

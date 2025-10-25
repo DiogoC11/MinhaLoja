@@ -12,10 +12,10 @@ export default function ProductCard({ p, onDetails }: { p: ProductType; onDetail
   const next = () => setIdx(i => (i + 1) % imgs.length);
   return (
     <div className="card h-full flex flex-col">
-      <div className="relative group">
+      <div className="relative group rounded-t-xl overflow-hidden bg-slate-800">
         {/* next/image is recommended but remote domains need config; fallback to img for now */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imgs[idx]} alt={p.nome} className="w-full h-40 object-contain bg-slate-800" />
+        <img src={imgs[idx]} alt={p.nome} className="w-full h-40 object-contain" />
         {imgs.length > 1 && (
           <>
             <button
