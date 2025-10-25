@@ -9,13 +9,93 @@ const fetcher = (u: string) => fetch(u).then(r=>r.json());
 
 function AutoScroll({ children, depKey }: { children: ReactNode; depKey?: string }){
   const ref = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({
+    down: false,
+    startX: 0,
+    sx: 0,
+    moved: false,
+    pid: 0,
+    lastX: 0,
+    lastT: 0,
+    vx: 0, // px/ms
+    raf: 0,
+  });
+  const [dragging, setDragging] = useState(false);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     // Scroll to the far right (today) after layout
     requestAnimationFrame(() => { el.scrollLeft = el.scrollWidth; });
   }, [depKey]);
-  return <div ref={ref} className="overflow-x-auto">{children}</div>;
+  return (
+    <div
+      ref={ref}
+      className={`overflow-x-auto ${dragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+      onPointerDown={(e) => {
+        if (e.button !== 0) return;
+        const now = performance.now();
+        if (dragRef.current.raf) { cancelAnimationFrame(dragRef.current.raf); dragRef.current.raf = 0; }
+        dragRef.current.down = true;
+        dragRef.current.startX = e.clientX;
+        dragRef.current.sx = ref.current?.scrollLeft || 0;
+        dragRef.current.moved = false;
+        dragRef.current.pid = e.pointerId;
+        dragRef.current.lastX = e.clientX;
+        dragRef.current.lastT = now;
+        dragRef.current.vx = 0;
+        try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
+      }}
+      onPointerMove={(e) => {
+        if (!dragRef.current.down) return;
+        const el = ref.current; if (!el) return;
+        const now = performance.now();
+        const dx = e.clientX - dragRef.current.startX;
+        if (!dragging) setDragging(true);
+        el.scrollLeft = dragRef.current.sx - dx;
+        if (Math.abs(dx) > 2) dragRef.current.moved = true;
+        const dt = Math.max(1, now - dragRef.current.lastT);
+        dragRef.current.vx = (e.clientX - dragRef.current.lastX) / dt;
+        dragRef.current.lastX = e.clientX;
+        dragRef.current.lastT = now;
+        e.preventDefault();
+      }}
+      onPointerUp={(e) => {
+        if (!dragRef.current.down) return;
+        dragRef.current.down = false;
+        try { (e.currentTarget as any).releasePointerCapture?.(dragRef.current.pid); } catch {}
+        setDragging(false);
+        const el = ref.current; if (!el) return;
+        const max = Math.max(0, el.scrollWidth - el.clientWidth);
+        let vx = dragRef.current.vx; // px/ms
+        let last = performance.now();
+  const decel = 0.0018; // px/ms^2 (mais "solto")
+        const step = (now: number) => {
+          const dt = now - last; last = now;
+          el.scrollLeft = el.scrollLeft - vx * dt;
+          if (el.scrollLeft <= 0 || el.scrollLeft >= max) {
+            el.scrollLeft = Math.min(Math.max(el.scrollLeft, 0), max);
+            vx = 0;
+          }
+          const sign = Math.sign(vx);
+          const mag = Math.max(0, Math.abs(vx) - decel * dt);
+          vx = sign * mag;
+          if (Math.abs(vx) > 0.02) {
+            dragRef.current.raf = requestAnimationFrame(step);
+          } else {
+            dragRef.current.raf = 0;
+          }
+        };
+        if (Math.abs(vx) > 0.05) {
+          dragRef.current.raf = requestAnimationFrame(step);
+        }
+      }}
+      onPointerCancel={() => { dragRef.current.down = false; setDragging(false); }}
+      onPointerLeave={() => { dragRef.current.down = false; setDragging(false); }}
+      onClickCapture={(e) => { if (dragRef.current.moved) { e.preventDefault(); e.stopPropagation(); dragRef.current.moved = false; } }}
+    >
+      {children}
+    </div>
+  );
 }
 
 type TopItem = { productId: string; qty: number; product: Product | null };

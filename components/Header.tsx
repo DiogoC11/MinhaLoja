@@ -1,14 +1,31 @@
 "use client";
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from './CartContext';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Header(){
+  const router = useRouter();
   const { count } = useCart();
   const [authLabel, setAuthLabel] = useState('Entrar');
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname() || '/';
+  // Horizontal drag for top nav
+  const navRef = useRef<HTMLElement | null>(null);
+  const dragRef = useRef({
+    down: false,
+    startX: 0,
+    sx: 0,
+    moved: false,
+    pid: 0,
+    lastX: 0,
+    lastT: 0,
+    vx: 0, // px/ms
+    raf: 0,
+    suppressUntil: 0, // timestamp to suppress click after kinetic scroll
+  });
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => () => { if (dragRef.current.raf) cancelAnimationFrame(dragRef.current.raf); }, []);
 
   async function refreshAuthLabel(){
     try {
@@ -57,7 +74,102 @@ export default function Header(){
           <span>Minha Loja</span>
         </Link>
         {/* Nav: quebra para a linha de baixo em ecrãs pequenos e evita sobrepor o logo */}
-        <nav className="flex items-center gap-6 sm:gap-8 mt-2 sm:mt-0 w-full sm:w-auto order-2 sm:order-none overflow-x-auto">
+        <nav
+          ref={navRef}
+          className={`flex items-center gap-6 sm:gap-8 mt-2 sm:mt-0 w-full sm:w-auto order-2 sm:order-none overflow-x-auto ${dragging ? 'cursor-grabbing select-none' : 'cursor-grab'}`}
+          onPointerDown={(e) => {
+            if (e.button !== 0) return;
+            const now = performance.now();
+            if (dragRef.current.raf) { cancelAnimationFrame(dragRef.current.raf); dragRef.current.raf = 0; }
+            dragRef.current.down = true;
+            dragRef.current.startX = e.clientX;
+            dragRef.current.sx = navRef.current?.scrollLeft || 0;
+            dragRef.current.moved = false;
+            dragRef.current.suppressUntil = 0;
+            dragRef.current.pid = e.pointerId;
+            dragRef.current.lastX = e.clientX;
+            dragRef.current.lastT = now;
+            dragRef.current.vx = 0;
+            try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
+          }}
+          onPointerMove={(e) => {
+            if (!dragRef.current.down) return;
+            const el = navRef.current; if (!el) return;
+            const now = performance.now();
+            const dx = e.clientX - dragRef.current.startX;
+            if (!dragging) setDragging(true);
+            el.scrollLeft = dragRef.current.sx - dx;
+              if (Math.abs(dx) > 4) dragRef.current.moved = true;
+            const dt = Math.max(1, now - dragRef.current.lastT);
+            dragRef.current.vx = (e.clientX - dragRef.current.lastX) / dt;
+            dragRef.current.lastX = e.clientX;
+            dragRef.current.lastT = now;
+              // Only prevent default if we are actually dragging to avoid canceling clicks
+              if (dragRef.current.moved) e.preventDefault();
+          }}
+          onPointerUp={(e) => {
+            if (!dragRef.current.down) return;
+            dragRef.current.down = false;
+            try { (e.currentTarget as any).releasePointerCapture?.(dragRef.current.pid); } catch {}
+            setDragging(false);
+            const el = navRef.current; if (!el) return;
+              // If movement was tiny, treat as a click and do not start inertia
+              const dxTotal = Math.abs(e.clientX - dragRef.current.startX);
+              if (dxTotal <= 4) {
+                // Treat as a click: manually navigate to the link under pointer to avoid any suppressed native click
+                dragRef.current.moved = false;
+                dragRef.current.vx = 0;
+                const elAt = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+                const anchor = elAt?.closest('a[href]') as HTMLAnchorElement | null;
+                const href = anchor?.getAttribute('href');
+                if (href) {
+                  // Prefer client-side navigation
+                  router.push(href);
+                }
+                return;
+              }
+            const max = Math.max(0, el.scrollWidth - el.clientWidth);
+            let vx = dragRef.current.vx; // px/ms
+            let last = performance.now();
+            const decel = 0.0018; // px/ms^2 (mais "solto")
+            const step = (now: number) => {
+              const dt = now - last; last = now;
+              el.scrollLeft = el.scrollLeft - vx * dt;
+              if (el.scrollLeft <= 0 || el.scrollLeft >= max) {
+                el.scrollLeft = Math.min(Math.max(el.scrollLeft, 0), max);
+                vx = 0;
+              }
+              const sign = Math.sign(vx);
+              const mag = Math.max(0, Math.abs(vx) - decel * dt);
+              vx = sign * mag;
+              if (Math.abs(vx) > 0.02) {
+                dragRef.current.raf = requestAnimationFrame(step);
+              } else {
+                dragRef.current.raf = 0;
+              }
+            };
+              if (Math.abs(vx) > 0.05) {
+                // Suppress clicks briefly right after a drag to avoid accidental activation
+                dragRef.current.suppressUntil = performance.now() + 200;
+                // Clear moved immediately; rely on suppressUntil only
+                dragRef.current.moved = false;
+                dragRef.current.raf = requestAnimationFrame(step);
+              } else {
+                dragRef.current.moved = false;
+              }
+          }}
+          onPointerCancel={() => { dragRef.current.down = false; dragRef.current.moved = false; setDragging(false); }}
+          onPointerLeave={() => { dragRef.current.down = false; dragRef.current.moved = false; setDragging(false); }}
+            onClickCapture={(e) => {
+              const now = performance.now();
+              if (now < dragRef.current.suppressUntil) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Clear flags so the very next click works
+                dragRef.current.suppressUntil = 0;
+              }
+            }}
+        >
           <Link href="/produtos" className={`${baseLink} ${isActive('/produtos') ? activeLink : ''}`}>Produtos</Link>
           <Link href="/carrinho" className={`cart-link inline-flex items-center gap-2 whitespace-nowrap ${baseLink} ${isActive('/carrinho') ? activeLink : ''}`}>
             Carrinho <span className="badge">{count}</span>
