@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useRef, useState } from 'react';
 import useSWR, { mutate } from 'swr';
+import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function AddProdutoPage(){
   const { data: catsData } = useSWR<Category[]>('/api/categories', fetcher);
+  const { data: prodsData } = useSWR<Product[]>('/api/products', fetcher);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; kind: 'success' | 'error' } | null>(null);
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -51,6 +53,12 @@ export default function AddProdutoPage(){
       setTimeout(()=>setNotice(null), 3000);
       return;
     }
+    const duplicate = (prodsData || []).some(p => (p.nome||'').trim().toLowerCase() === body.nome.trim().toLowerCase());
+    if (duplicate){
+      setNotice({ text: 'Já existe um produto com esse nome.', kind: 'error' });
+      setTimeout(()=>setNotice(null), 3000);
+      return;
+    }
     setBusy(true);
     try{
       // Upload de várias imagens (requer pelo menos uma)
@@ -68,7 +76,11 @@ export default function AddProdutoPage(){
       body.imagens = uploaded;
       body.imagem = uploaded[0] || '';
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if (!res.ok) throw new Error('Falha ao guardar');
+      if (!res.ok) {
+        let msg = 'Falha ao guardar';
+        try { const j = await res.json(); msg = j?.error || msg; } catch {}
+        throw new Error(msg);
+      }
   await mutate('/api/products');
   try { form.reset(); } catch {}
       setCreateFiles([]); setCreatePreviews([]);

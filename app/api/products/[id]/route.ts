@@ -18,6 +18,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   const idx = list.findIndex(p => p.id === params.id);
   if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   const old = list[idx];
+  // Enforce unique name if changed
+  if (body.nome != null) {
+    const novoNome = String(body.nome).trim();
+    if (!novoNome) return NextResponse.json({ error: 'Nome é obrigatório' }, { status: 400 });
+    const conflict = list.some(p => p.id !== params.id && (p.nome || '').trim().toLowerCase() === novoNome.toLowerCase());
+    if (conflict) return NextResponse.json({ error: 'Já existe um produto com esse nome.' }, { status: 409 });
+  }
   const imagens = Array.isArray(body.imagens)
     ? body.imagens.map((s: unknown) => String(s || '').trim()).filter((s: string) => s.length > 0).slice(0, 10)
     : undefined;

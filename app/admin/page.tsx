@@ -158,6 +158,13 @@ export default function AdminPage(){
       setTimeout(()=>setNotice(null), 3000);
       return;
     }
+    // Prevenir nome duplicado no cliente para evitar upload desnecessário
+    const existing = (data || []).some(p => (p.nome||'').trim().toLowerCase() === body.nome.trim().toLowerCase());
+    if (existing){
+      setNotice({ text: 'Já existe um produto com esse nome.', kind: 'error' });
+      setTimeout(()=>setNotice(null), 3000);
+      return;
+    }
     setBusy(true);
     try{
       // Upload de várias imagens (requer pelo menos uma)
@@ -175,7 +182,11 @@ export default function AdminPage(){
       body.imagens = uploaded;
       body.imagem = uploaded[0] || '';
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        if (!res.ok) throw new Error('Falha ao guardar');
+      if (!res.ok) {
+        let msg = 'Falha ao guardar';
+        try { const j = await res.json(); msg = j?.error || msg; } catch {}
+        throw new Error(msg);
+      }
   await mutate('/api/products');
   try { form.reset(); } catch {}
       setCreateFiles([]); setCreatePreviews([]);
@@ -428,7 +439,11 @@ export default function AdminPage(){
               payload.imagem = payload.imagens[0] || '';
             }
             const res = await fetch(`/api/products/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            if (!res.ok) throw new Error('Falha ao atualizar produto');
+            if (!res.ok) {
+              let msg = 'Falha ao atualizar produto';
+              try { const j = await res.json(); msg = j?.error || msg; } catch {}
+              throw new Error(msg);
+            }
             await mutate('/api/products');
             setEditOpen(false);
             setEditId(null);
