@@ -1,6 +1,6 @@
 "use client";
 import useSWR, { mutate } from 'swr';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Category } from '@/lib/categories';
 import type { Product } from '@/lib/fsdb';
 import Modal from '@/components/Modal';
@@ -32,6 +32,54 @@ export default function AdminCategoriesPage(){
   // Delete modal state
   const [delOpen, setDelOpen] = useState(false);
   const [delId, setDelId] = useState<string | null>(null);
+
+  // Drag-to-scroll for categories list (mirror of products list)
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const dragRef = useRef({ down: false, startX: 0, startY: 0, sx: 0, sy: 0, moved: false, pid: 0, axis: '' as '' | 'x' | 'y' });
+  const [dragging, setDragging] = useState(false);
+
+  const onListPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // only left click
+    // Ignore drags starting on interactive elements or table header
+    const el = e.target as HTMLElement;
+    if (el.closest('thead, button, a, input, select, textarea')) return;
+    dragRef.current.down = true;
+    dragRef.current.startX = e.clientX;
+    dragRef.current.startY = e.clientY;
+    dragRef.current.sx = listRef.current?.scrollLeft || 0;
+    dragRef.current.sy = listRef.current?.scrollTop || 0;
+    dragRef.current.moved = false;
+    dragRef.current.pid = e.pointerId;
+    dragRef.current.axis = '';
+    try { (e.currentTarget as any).setPointerCapture?.(e.pointerId); } catch {}
+  };
+  const onListPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.down) return;
+    const el = listRef.current; if (!el) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (!dragRef.current.axis) {
+      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
+        dragRef.current.axis = Math.abs(dx) >= Math.abs(dy) ? 'x' : 'y';
+      }
+    }
+    if (dragRef.current.axis === 'x') {
+      if (!dragging) setDragging(true);
+      el.scrollLeft = dragRef.current.sx - dx;
+      if (Math.abs(dx) > 2) dragRef.current.moved = true;
+      e.preventDefault(); // avoid text selection while dragging horizontally
+    } else if (dragRef.current.axis === 'y') {
+      // allow native vertical scroll
+    }
+  };
+  const onListPointerEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragRef.current.down) return;
+    dragRef.current.down = false;
+    try { (e.currentTarget as any).releasePointerCapture?.(dragRef.current.pid); } catch {}
+    setDragging(false);
+    dragRef.current.axis = '';
+    dragRef.current.moved = false; // clear so the next click works
+  };
 
   async function createCat(){
     const n = nome.trim(); if (!n) return;
@@ -113,18 +161,34 @@ export default function AdminCategoriesPage(){
           {notice.text}
         </div>
       )}
-      <div className="card p-4 mb-4 flex gap-2 items-end">
-        <div className="flex-1">
+      <div className="card p-4 mb-4 flex flex-wrap gap-2 items-end min-w-0">
+        <div className="flex-1 min-w-0">
           <label className="text-slate-400 block mb-1">Nova categoria</label>
-          <input value={nome} onChange={e=>setNome(e.target.value)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 w-full" placeholder="Ex.: Roupas" />
+          <input value={nome} onChange={e=>setNome(e.target.value)} className="border border-slate-600 rounded-md bg-slate-900 px-3 py-2 w-full max-w-full" placeholder="Ex.: Roupas" />
         </div>
-        <button className="btn" onClick={createCat} disabled={busy || !nome.trim()}>Adicionar</button>
+        <button className="btn block sm:inline-flex w-auto max-w-full px-2 py-1 text-xs sm:text-sm sm:px-3 sm:py-2 leading-tight break-words text-center sm:whitespace-nowrap" onClick={createCat} disabled={busy || !nome.trim()}>Adicionar</button>
       </div>
 
-      <div className="card p-0 overflow-hidden">
+      <div className="card p-0 mt-4">
+        <div
+          ref={listRef}
+          className={`overflow-hidden overflow-x-auto overflow-y-auto max-h-[60vh] rounded-t-xl ${dragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`}
+          onPointerDown={onListPointerDown}
+          onPointerMove={onListPointerMove}
+          onPointerUp={onListPointerEnd}
+          onPointerCancel={onListPointerEnd}
+          onPointerLeave={onListPointerEnd}
+          onClickCapture={(e) => {
+            if (dragRef.current.moved) {
+              e.preventDefault();
+              e.stopPropagation();
+              dragRef.current.moved = false;
+            }
+          }}
+        >
         <table className="w-full">
-          <thead>
-            <tr className="text-left bg-slate-800">
+          <thead className="sticky top-0 z-[1] text-left bg-slate-800 rounded-tl-xl">
+            <tr>
               <th className="px-3 py-2">Nome</th>
               <th className="px-3 py-2">Produtos</th>
               <th className="px-3 py-2 w-[150px]">Ações</th>
@@ -172,6 +236,7 @@ export default function AdminCategoriesPage(){
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Edit modal */}
