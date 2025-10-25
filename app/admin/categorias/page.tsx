@@ -139,6 +139,7 @@ export default function AdminCategoriesPage(){
       setDelOpen(false);
       setDelId(null);
       setNotice({ text: 'Categoria apagada.', kind: 'success' });
+      setTimeout(() => setNotice(null), 3000);
     }catch(err: any){
       setNotice({ text: err?.message || 'Erro desconhecido', kind: 'error' });
       setTimeout(() => setNotice(null), 3000);
