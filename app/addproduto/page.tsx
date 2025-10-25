@@ -53,9 +53,12 @@ export default function AddProdutoPage(){
     setBusy(true);
     try{
       // Upload de várias imagens (requer pelo menos uma)
-      if (!createFiles.length) throw new Error('Selecione pelo menos uma imagem');
+      const inputEl = e.currentTarget.querySelector('input[name="imagensFiles"]') as HTMLInputElement | null;
+      const fromForm = Array.from(inputEl?.files || []);
+      const selectedFiles = createFiles.length ? createFiles : fromForm;
+      if (!selectedFiles.length) throw new Error('Selecione pelo menos uma imagem');
       const uploaded: string[] = [];
-      for (const file of createFiles){
+      for (const file of selectedFiles){
         const up = new FormData(); up.append('file', file);
         const ur = await fetch('/api/upload', { method: 'POST', body: up });
         if (!ur.ok) throw new Error('Falha no upload da imagem');
