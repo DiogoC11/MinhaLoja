@@ -43,35 +43,5 @@
     "id": "cat-brinquedo-kapq43",
     "nome": "Brinquedo",
     "createdAt": 1761329708340
-  },
-  {
-    "id": "cat-teste-pm1aso",
-    "nome": "teste",
-    "createdAt": 1761401123344
-  },
-  {
-    "id": "cat-teste1-mcukpn",
-    "nome": "teste1",
-    "createdAt": 1761401129935
-  },
-  {
-    "id": "cat-teste2-fc13ru",
-    "nome": "teste2",
-    "createdAt": 1761401131781
-  },
-  {
-    "id": "cat-teste3-aj7zv4",
-    "nome": "teste3",
-    "createdAt": 1761401133799
-  },
-  {
-    "id": "cat-teste4-9qzzjk",
-    "nome": "teste4",
-    "createdAt": 1761401135596
-  },
-  {
-    "id": "cat-teste5-han913",
-    "nome": "teste5",
-    "createdAt": 1761401138348
   }
 ]

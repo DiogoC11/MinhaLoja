@@ -167,14 +167,14 @@
     "categoria": "Carnaval"
   },
   {
-    "id": "p18",
-    "nome": "Miniatura de Carro",
-    "preco": 24.9,
-    "descricao": "Miniatura colecionável de carro desportivo.",
-    "imagem": "https://picsum.photos/seed/miniatura-carro/800/600",
+    "id": "teste-dsoit3",
+    "nome": "teste",
+    "preco": 123,
+    "descricao": "dqdw",
+    "imagem": "/uploads/img-1761402531101-ignvw8zq.jpg",
     "imagens": [
-      "https://picsum.photos/seed/miniatura-carro/800/600"
+      "/uploads/img-1761402531101-ignvw8zq.jpg"
     ],
-    "categoria": "Carro"
+    "categoria": "Enfeite"
   }
 ]
