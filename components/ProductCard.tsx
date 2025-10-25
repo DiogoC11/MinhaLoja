@@ -44,7 +44,7 @@ export default function ProductCard({ p, onDetails }: { p: ProductType; onDetail
           <div className="font-bold">{formatPriceEUR(p.preco)}</div>
           <div className="flex gap-2">
             <button className="btn" onClick={() => add(p.id)}>Adicionar</button>
-            {onDetails && <button className="btn btn-ghost" onClick={() => onDetails(p.id)}>Detalhes</button>}
+            {onDetails && <button className="btn " onClick={() => onDetails(p.id)}>Detalhes</button>}
           </div>
         </div>
       </div>
