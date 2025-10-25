@@ -36,7 +36,8 @@ export default function AddProdutoPage(){
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>){
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const body = {
       nome: String(fd.get('nome')||'').trim(),
       preco: Number(fd.get('preco')||0),
@@ -53,7 +54,7 @@ export default function AddProdutoPage(){
     setBusy(true);
     try{
       // Upload de várias imagens (requer pelo menos uma)
-      const inputEl = e.currentTarget.querySelector('input[name="imagensFiles"]') as HTMLInputElement | null;
+  const inputEl = form.querySelector('input[name="imagensFiles"]') as HTMLInputElement | null;
       const fromForm = Array.from(inputEl?.files || []);
       const selectedFiles = createFiles.length ? createFiles : fromForm;
       if (!selectedFiles.length) throw new Error('Selecione pelo menos uma imagem');
@@ -68,8 +69,8 @@ export default function AddProdutoPage(){
       body.imagem = uploaded[0] || '';
       const res = await fetch('/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
       if (!res.ok) throw new Error('Falha ao guardar');
-      await mutate('/api/products');
-      e.currentTarget.reset();
+  await mutate('/api/products');
+  try { form.reset(); } catch {}
       setCreateFiles([]); setCreatePreviews([]);
       setNotice({ text: 'Produto adicionado com sucesso!', kind: 'success' });
       setTimeout(()=>setNotice(null), 3000);
