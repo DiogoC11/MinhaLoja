@@ -26,7 +26,7 @@ export default function HomePage(){
   return (
     <div>
       <div className="toolbar">
-        <h2 className="m-0">Todos os produtos</h2>
+        <h2 className="m-0 text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-300 text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(56,189,248,0.35)]">Todos os Produtos</h2>
       </div>
       <div className="grid gap-4 md:grid-cols-[1fr_300px]">
         {/* Lista de produtos (esquerda) */}
