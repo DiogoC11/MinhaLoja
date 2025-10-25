@@ -17,6 +17,7 @@ export default function AddProdutoPage(){
   const [createFiles, setCreateFiles] = useState<File[]>([]);
   const [createPreviews, setCreatePreviews] = useState<string[]>([]);
   const createPreviewsRef = useRef<string[]>([]);
+  const createFileInputRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => { createPreviewsRef.current = createPreviews; }, [createPreviews]);
   useEffect(() => {
     // Libertar quaisquer URLs ao desmontar
@@ -144,17 +145,29 @@ export default function AddProdutoPage(){
           </div>
           <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Imagens (ficheiros)</label>
-            <input name="imagensFiles" type="file" accept="image/*" multiple required={createFiles.length === 0} className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-400 file:text-slate-900 file:font-semibold file:px-3 file:py-2 hover:file:bg-blue-500 file:transition-colors file:duration-150"
+            {/* Input real (oculto) */}
+            <input
+              ref={createFileInputRef}
+              name="imagensFiles"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
               onChange={(e)=>{
                 const files = Array.from(e.currentTarget.files||[]) as File[];
                 if (files.length === 0) return;
                 setCreateFiles(prev => [...prev, ...files]);
-                // previews (acrescentar, sem revogar as anteriores)
                 const urls = files.map(f => URL.createObjectURL(f));
                 setCreatePreviews(prev => [...prev, ...urls]);
                 // permitir escolher novamente os mesmos ficheiros
                 e.currentTarget.value = '';
-              }} />
+              }}
+            />
+            {/* Controlos visuais */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <button type="button" className="btn" onClick={()=>createFileInputRef.current?.click()}>Selecionar imagens</button>
+              <span className="text-slate-400 text-sm">{createFiles.length > 0 ? `${createFiles.length} ficheiro(s) selecionado(s)` : 'Nenhum ficheiro selecionado'}</span>
+            </div>
             {createPreviews.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
                 {createPreviews.map((src, i) => (
