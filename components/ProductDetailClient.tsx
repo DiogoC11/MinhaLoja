@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
 import type { Product } from '@/lib/fsdb';
 import type { Category } from '@/lib/categories';
@@ -10,6 +11,7 @@ import { useCart } from '@/components/CartContext';
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
 export default function ProductDetailClient({ product, isAdmin }: { product: Product; isAdmin: boolean }){
+  const router = useRouter();
   const { add } = useCart();
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -125,7 +127,7 @@ export default function ProductDetailClient({ product, isAdmin }: { product: Pro
             <div className="font-bold mb-3">{formatPriceEUR(cur.preco)}</div>
             <div className="flex gap-2">
               <button className="btn" onClick={() => add(cur.id)}>Adicionar ao carrinho</button>
-              <a className="btn btn-ghost" href="/produtos">Voltar</a>
+              <button className="btn btn-ghost" onClick={() => router.back()}>Voltar</button>
               {isAdmin && (
                 <>
                   <button className="btn btn-ghost" onClick={()=>{ setEdit({ ...cur }); setFiles([]); setPreviews([]); setOpen(true); }}>Editar</button>
