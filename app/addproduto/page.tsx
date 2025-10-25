@@ -131,7 +131,7 @@ export default function AddProdutoPage(){
           </div>
           <div className="flex flex-col gap-1 min-w-0">
             <label className="text-slate-400">Imagens (ficheiros)</label>
-            <input name="imagensFiles" type="file" accept="image/*" multiple required className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-400 file:text-slate-900 file:font-semibold file:px-3 file:py-2 hover:file:bg-blue-500 file:transition-colors file:duration-150"
+            <input name="imagensFiles" type="file" accept="image/*" multiple required={createFiles.length === 0} className="w-full max-w-full border border-slate-600 rounded-md bg-slate-900 px-3 py-2 text-slate-200 file:mr-3 file:rounded-md file:border-0 file:bg-blue-400 file:text-slate-900 file:font-semibold file:px-3 file:py-2 hover:file:bg-blue-500 file:transition-colors file:duration-150"
               onChange={(e)=>{
                 const files = Array.from(e.currentTarget.files||[]) as File[];
                 if (files.length === 0) return;
