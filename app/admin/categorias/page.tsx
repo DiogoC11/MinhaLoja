@@ -1,7 +1,8 @@
 "use client";
 import useSWR, { mutate } from 'swr';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Category } from '@/lib/categories';
+import type { Product } from '@/lib/fsdb';
 import Modal from '@/components/Modal';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -9,6 +10,16 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 export default function AdminCategoriesPage(){
   const { data } = useSWR<Category[]>('/api/categories', fetcher);
   const list = data || [];
+  const { data: productsData } = useSWR<Product[]>('/api/products', fetcher);
+  const products = productsData || [];
+  const countByCategory = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of products){
+      const key = (p.categoria || '');
+      m.set(key, (m.get(key) || 0) + 1);
+    }
+    return m;
+  }, [products]);
   const [nome, setNome] = useState('');
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<{ text: string; kind: 'success' | 'error' } | null>(null);
@@ -115,23 +126,49 @@ export default function AdminCategoriesPage(){
           <thead>
             <tr className="text-left bg-slate-800">
               <th className="px-3 py-2">Nome</th>
-              <th className="px-3 py-2 w-[220px]">Ações</th>
+              <th className="px-3 py-2">Produtos</th>
+              <th className="px-3 py-2 w-[150px]">Ações</th>
             </tr>
           </thead>
           <tbody>
             {list.map(c => (
               <tr key={c.id} className="border-t border-slate-700">
                 <td className="px-3 py-2">{c.nome}</td>
+                <td className="px-3 py-2">{countByCategory.get(c.nome) || 0}</td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">
-                    <button className="btn" onClick={()=>openEdit(c.id)} disabled={busy}>Renomear</button>
-                    <button className="btn btn-ghost" onClick={()=>openDelete(c.id)} disabled={busy}>Apagar</button>
+                    <button
+                      className="inline-flex items-center gap-2 px-2 py-1 rounded-md bg-blue-400 text-slate-900 font-semibold hover:bg-blue-500 transition-colors transition-transform duration-150 ease-out hover:-translate-y-0.5"
+                      title="Renomear"
+                      aria-label="Renomear"
+                      onClick={()=>openEdit(c.id)}
+                      disabled={busy}
+                    >
+                      {/* Ícone lápis */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-white">
+                        <path d="M21.731 2.269a2.625 2.625 0 0 0-3.714 0l-1.157 1.157 3.714 3.714 1.157-1.157a2.625 2.625 0 0 0 0-3.714z" />
+                        <path d="M19.513 8.199 15.8 4.486 4.034 16.251a5.25 5.25 0 0 0-1.32 2.165l-.746 2.238a.75.75 0 0 0 .95.95l2.238-.746a5.25 5.25 0 0 0 2.165-1.32L19.513 8.2z" />
+                      </svg>
+                    </button>
+                    <button
+                      className="px-2 py-1 rounded-md bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/60 transition-colors transition-transform duration-150 ease-out hover:-translate-y-0.5"
+                      title="Apagar"
+                      aria-label="Apagar"
+                      onClick={()=>openDelete(c.id)}
+                      disabled={busy}
+                    >
+                      {/* Ícone lixo */}
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                        <path d="M9 3.75A.75.75 0 0 1 9.75 3h4.5a.75.75 0 0 1 .75.75V6h3a.75.75 0 0 1 0 1.5h-.443l-1.007 11.08A2.25 2.25 0 0 1 14.311 21H9.689a2.25 2.25 0 0 1-2.238-2.42L6.443 7.5H6A.75.75 0 0 1 6 6h3V3.75zM10.5 6h3V4.5h-3V6z" />
+                        <path d="M10 9.75a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75zm4 0a.75.75 0 0 1 .75.75v6a.75.75 0 0 1-1.5 0v-6a.75.75 0 0 1 .75-.75z" />
+                      </svg>
+                    </button>
                   </div>
                 </td>
               </tr>
             ))}
             {list.length === 0 && (
-              <tr><td className="px-3 py-6 text-center text-slate-400" colSpan={2}>Sem categorias. Adicione a primeira acima.</td></tr>
+              <tr><td className="px-3 py-6 text-center text-slate-400" colSpan={3}>Sem categorias. Adicione a primeira acima.</td></tr>
             )}
           </tbody>
         </table>
