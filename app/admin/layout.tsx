@@ -9,16 +9,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect('/');
   }
   return (
-    // Deixa a página inteira fazer scroll para que o footer fique no fim da página
-    <div className="flex flex-col">
-      {/* Tabs do admin sempre visíveis durante o scroll da página */}
-      <div className="sticky top-0 z-10 border-b border-slate-700/70 bg-[var(--bg)]/90 backdrop-blur supports-[backdrop-filter]:bg-[var(--bg)]/60">
+    // Mantém as tabs sempre visíveis e aplica scroll vertical apenas ao conteúdo
+    <div className="flex h-full flex-col min-h-0">
+      {/* Sub tabs para ações do admin (fixas no topo da área do admin) */}
+      <div className="flex-none">
         <AdminTabs />
       </div>
 
-      {/* Conteúdo normal (sem scroll interno) para empurrar o footer */}
-      <div className="w-[80%] mx-auto py-4">
-        {children}
+      {/* Conteúdo com scroll vertical interno */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="w-[80%] mx-auto py-4">
+          {children}
+        </div>
       </div>
     </div>
   );
