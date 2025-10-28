@@ -40,11 +40,11 @@ export default function ProductCard({ p, onDetails }: { p: ProductType; onDetail
       <div className="card-body flex-1 flex flex-col gap-2">
   <h3 className="font-semibold line-clamp-1">{p.nome}</h3>
   <div className="text-slate-300 text-sm line-clamp-2">{p.descricao}</div>
-        <div className="mt-auto flex flex-col gap-2">
+        <div className="mt-auto flex flex-col gap-2 min-w-0">
           <div className="font-bold">{formatPriceEUR(p.preco)}</div>
-          <div className="flex gap-2">
-            <button className="btn" onClick={() => add(p.id)}>Adicionar</button>
-            {onDetails && <button className="btn btn-ghost" onClick={() => onDetails(p.id)}>Detalhes</button>}
+          <div className="flex flex-wrap gap-2">
+            <button className="btn w-full sm:w-auto justify-center" onClick={() => add(p.id)}>Adicionar</button>
+            {onDetails && <button className="btn btn-ghost w-full sm:w-auto justify-center" onClick={() => onDetails(p.id)}>Detalhes</button>}
           </div>
         </div>
       </div>

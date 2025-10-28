@@ -7,8 +7,8 @@
   --bg: #0b1020;
   --fg: #e6e9f2;
   /* Card sizing controls */
-  --card-min: 260px; /* largura mínima de cada card */
-  --card-max: 360px; /* largura máxima de cada card */
+  --card-min: 223px; /* largura mínima de cada card */
+  --card-max: 240px; /* largura máxima de cada card */
   /* Scrollbar theme (cores do site) */
   --sb-track: #0b1020;      /* fundo (bg) */
   --sb-thumb: #475569;      /* slate-600 aprox */
@@ -20,23 +20,35 @@ body { background: var(--bg); color: var(--fg); }
 
 .container { @apply mx-auto max-w-6xl px-4; }
 .badge { @apply inline-flex items-center rounded-full bg-blue-400 text-slate-900 px-2 text-xs font-semibold; }
-.btn { @apply inline-flex items-center gap-2 rounded-md bg-blue-400 text-slate-900 font-semibold px-3 py-2 hover:bg-blue-500; }
-.btn-ghost { @apply inline-flex items-center gap-2 rounded-md border border-slate-600 text-slate-100 px-3 py-2 hover:border-blue-400; }
-.btn-danger { @apply inline-flex items-center gap-2 rounded-md bg-rose-400 text-slate-900 font-semibold px-3 py-2 hover:bg-rose-500; }
+.btn { @apply inline-flex items-center gap-2 rounded-md bg-blue-400 text-slate-900 font-semibold px-3 py-2 hover:bg-blue-500 hover:text-white; }
+.btn-ghost { @apply inline-flex items-center gap-2 rounded-md border border-slate-600 text-slate-900 px-3 py-2 hover:border-blue-400 hover:text-white; }
+.btn-danger { @apply inline-flex items-center gap-2 rounded-md bg-rose-400 text-slate-900 font-semibold px-3 py-2 hover:bg-rose-500 hover:text-white; }
 .card { @apply rounded-xl border border-slate-700 bg-slate-900/40; }
 .card-body { @apply p-4; }
 .toolbar { @apply flex items-center justify-between my-4; }
 .muted { @apply text-slate-400; }
 .grid-products {
   @apply grid gap-4 items-stretch;
-  grid-template-columns: repeat(auto-fit, minmax(var(--card-min), 1fr));
-  justify-items: center; /* centra o card dentro da coluna quando esta é mais larga que o max */
+  /* Máximo 4 produtos por linha (1/2/3/4 por breakpoint), cada coluna entre card-min e card-max */
+  grid-template-columns: repeat(1, minmax(var(--card-min), var(--card-max)));
+  justify-content: start;
+  justify-items: stretch;
+}
+
+@media (min-width: 640px) { /* sm */
+  .grid-products { grid-template-columns: repeat(2, minmax(var(--card-min), var(--card-max))); }
+}
+@media (min-width: 1024px) { /* lg */
+  .grid-products { grid-template-columns: repeat(3, minmax(var(--card-min), var(--card-max))); }
+}
+@media (min-width: 1280px) { /* xl */
+  .grid-products { grid-template-columns: repeat(4, minmax(var(--card-min), var(--card-max))); }
 }
 
 /* limitar largura real do wrapper de cada card */
 .grid-products > * {
   width: 100%;
-  max-width: var(--card-max);
+  max-width: var(--card-max); /* os cards têm um máximo consistente */
 }
 
 /* Clamp text to two lines with ellipsis */

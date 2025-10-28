@@ -120,7 +120,7 @@ export default function AdminTabs(){
           const active = pathname === t.href;
           const base = 'px-3 py-2 border-b-2 border-transparent transition-colors text-base';
           const hover = 'hover:text-blue-300';
-          const act = 'border-blue-400 text-blue-300 font-bold text-lg mb-[-1px]';
+          const act = 'border-blue-300 text-blue-300 font-bold text-lg mb-[-1px]';
           return (
             <Link
               key={t.href}

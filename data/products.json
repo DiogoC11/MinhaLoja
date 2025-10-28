@@ -165,16 +165,5 @@
       "https://picsum.photos/seed/fato-carnaval/800/600"
     ],
     "categoria": "Carnaval"
-  },
-  {
-    "id": "teste-dsoit3",
-    "nome": "teste",
-    "preco": 123,
-    "descricao": "dqdw",
-    "imagem": "/uploads/img-1761402531101-ignvw8zq.jpg",
-    "imagens": [
-      "/uploads/img-1761402531101-ignvw8zq.jpg"
-    ],
-    "categoria": "Enfeite"
   }
 ]

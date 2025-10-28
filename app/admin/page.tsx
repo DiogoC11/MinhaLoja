@@ -129,18 +129,24 @@ export default function AdminPage(){
     }) as any as Product[];
   }, [data, sorts]);
 
-  // Proteger página: requer sessão
-  useState(() => {
+  // Proteger página: requer sessão (client-side)
+  useEffect(() => {
+    let alive = true;
     (async () => {
       try{
         const r = await fetch('/api/auth/me', { cache: 'no-store' });
         const j = await r.json();
         const isOk = !!(j.user && j.user.isAdmin);
+        if (!alive) return;
         setAuthed(isOk);
         if (!isOk) location.href = '/';
-      }catch{ setAuthed(false); location.href = '/login'; }
+      }catch{
+        if (!alive) return;
+        setAuthed(false); location.href = '/login';
+      }
     })();
-  });
+    return () => { alive = false; };
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>){
     e.preventDefault();
